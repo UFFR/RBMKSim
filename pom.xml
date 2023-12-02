@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>RBMKSim</groupId>
-  <artifactId>RBMKSim</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <groupId>org.uffr.rbmksim</groupId>
+  <artifactId>rbmksim</artifactId>
+  <version>0.5.0-ALPHA</version>
   <name>RBMKSim</name>
   <description>RBMK designer and simulator for the Minecraft mod: Hbm's Nuclear Tech Mod</description>
   <properties>
@@ -28,11 +28,6 @@
 	    <version>2.0.9</version>
 	</dependency>
 	<!-- https://mvnrepository.com/artifact/org.slf4j/jul-to-slf4j -->
-	<dependency>
-	    <groupId>org.slf4j</groupId>
-	    <artifactId>jul-to-slf4j</artifactId>
-	    <version>2.0.9</version>
-	</dependency>
 	<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
 	<dependency>
 	    <groupId>com.fasterxml.jackson.core</groupId>
@@ -44,6 +39,38 @@
 	    <groupId>com.fasterxml.jackson.core</groupId>
 	    <artifactId>jackson-databind</artifactId>
 	    <version>2.16.0</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.eclipse.collections</groupId>
+	  <artifactId>eclipse-collections-api</artifactId>
+	  <version>11.1.0</version>
+	</dependency>
+	
+	<dependency>
+	  <groupId>org.eclipse.collections</groupId>
+	  <artifactId>eclipse-collections</artifactId>
+	  <version>11.1.0</version>
+	</dependency>
+	<dependency>
+		<groupId>org.uffr.uffrlib</groupId>
+		<artifactId>uffr_util</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+		<!--<systemPath>${project.basedir}/dependencies/uffr_util-0.1.0-SNAPSHOT.jar</systemPath>-->
+	</dependency>
+	<dependency>
+		<groupId>org.openjfx</groupId>
+		<artifactId>javafx-fxml</artifactId>
+		<version>21.0.1</version>
+	</dependency>
+	<dependency>
+		<groupId>com.typesafe</groupId>
+		<artifactId>config</artifactId>
+		<version>1.4.3</version>
+	</dependency>
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-jdk14</artifactId>
+		<version>2.0.9</version>
 	</dependency>
   </dependencies>
   <build>
@@ -57,6 +84,19 @@
       </resource>
     </resources>
     <plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-jar-plugin</artifactId>
+			<version>3.3.0</version>
+			<configuration>
+				<archive>
+					<manifest>
+						<addClasspath>true</addClasspath>
+						<mainClass>${project.groupId}.main.Main</mainClass>
+					</manifest>
+				</archive>
+			</configuration>
+		</plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
@@ -70,9 +110,36 @@
         <artifactId>javafx-maven-plugin</artifactId>
         <version>0.0.8</version>
         <configuration>
-            <mainClass>MainController</mainClass>
+            <mainClass>org.uffr.rbmksim.main.Main</mainClass>
         </configuration>
     </plugin>
+    <plugin>
+   <groupId>org.apache.maven.plugins</groupId>
+   <artifactId>maven-install-plugin</artifactId>
+   <version>3.1.1</version>
+   <configuration>
+      <groupId>org.uffr.uffrlib</groupId>
+      <artifactId>uffr_util</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <packaging>jar</packaging>
+      <file>${basedir}/dependencies/uffr_util-0.1.0-SNAPSHOT.jar</file>
+      <generatePom>true</generatePom>
+   </configuration>
+   <executions>
+      <execution>
+         <id>install-jar-lib</id>
+         <goals>
+            <goal>install-file</goal>
+         </goals>
+         <phase>validate</phase>
+      </execution>
+   </executions>
+	</plugin>
     </plugins>
   </build>
+  <organization>
+  	<name>Unnamed Group 13</name>
+  	<url>https://u-group13.org/</url>
+  </organization>
+  <url>https://github.com/UFFR/RBMKSim</url>
 </project>
