@@ -11,6 +11,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.main.Main;
@@ -23,7 +29,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.hash.PrimitiveSink;
 
-public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializable, Cloneable
+public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializable, Cloneable, ConfigNT
 {
 	private static final long serialVersionUID = 2581161401492824888L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramConfig.class);
@@ -31,7 +37,7 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	public static final Locale LOCALE = Locale.getDefault();
 	public static final Path
 					USER_PATH = Path.of(System.getProperty("user.home")),// TODO Change if it causes the program to explode
-					CONFIG_PATH = System.getProperty("os.name").contains("Linux") ? Path.of(System.getProperty("user.home"), ".config", "rbmksim") : Path.of("%APPDATA%", "rbmksim");
+					CONFIG_PATH = System.getProperty("os.name").contains("Linux") ? Path.of(System.getProperty("user.home"), ".config", "rbmksim") : Path.of("%APPDATA%", "rbmksim");// TODO Ditto
 	public static final String USERNAME = System.getProperty("user.name");
 	public static final byte TICK_DELAY = 0;
 	
@@ -75,6 +81,24 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 			sink.putString(path.toString(), UTF_8);
 	}
 
+	@Override
+	public Configuration constructDefaults() throws ConfigurationException
+	{
+		// TODO Auto-generated method stub
+		final Parameters params = new Parameters();
+		final BasicConfigurationBuilder<PropertiesConfiguration> builder =
+				new BasicConfigurationBuilder<>(PropertiesConfiguration.class)
+					.configure(params.basic().setListDelimiterHandler(new DefaultListDelimiterHandler(',')).setThrowExceptionOnMissing(true));
+		final PropertiesConfiguration config = builder.getConfiguration();
+		config.addProperty("locale", locale.toString());
+		config.addProperty("configPath", configPath);
+		config.addProperty("userPath", userPath);
+		config.addProperty("username", username);
+		config.addProperty("tickDelay", tickDelay);
+		
+		return config;
+	}
+	
 	@Override
 	public ProgramConfig copy(ProgramConfig config)
 	{

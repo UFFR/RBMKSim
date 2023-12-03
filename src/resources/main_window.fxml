@@ -156,7 +156,7 @@
                         </TextArea>
                         <TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="360.0" prefWidth="480.0" tabClosingPolicy="UNAVAILABLE">
                           <tabs>
-                            <Tab closable="false" text="Main View">
+                            <Tab fx:id="mainViewTab" closable="false" text="Main View">
                                  <content>
                                     <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0">
                                        <children>
@@ -164,7 +164,7 @@
                                        </children></AnchorPane>
                                  </content>
                             </Tab>
-                              <Tab closable="false" text="Graphs">
+                              <Tab fx:id="graphsTab" closable="false" text="Graphs">
                                 <content>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                        <children>
@@ -188,7 +188,7 @@
                                     </AnchorPane>
                                 </content>
                               </Tab>
-                              <Tab text="Cost Estimator">
+                              <Tab fx:id="costEstimatorTab" text="Cost Estimator">
                                 <content>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                                 </content>

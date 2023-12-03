@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.main.Main;
 import org.uffr.rbmksim.main.RBMKBlueprint;
 import org.uffr.rbmksim.main.RBMKSimulation;
@@ -24,6 +26,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 
 public class FileUtil
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
 	public static final ExtensionFilter BLUEPRINT_FILTER	= new ExtensionFilter("RBMK Blueprint File", Main.EXT_BPRINT),
 										SIMULATION_FILTER	= new ExtensionFilter("RBMK Simulation File", Main.EXT_RSIM);
 //	private static final byte[] BLUEPRINT_MAGIC_B	= {0x52, 0x42, 0x4D, 0x4B, 0x53, 0x69, 0x6D, 0x42},// RBMKSimB
@@ -36,19 +39,23 @@ public class FileUtil
 	{
 		if (Files.exists(path))
 			return false;
-		
+
+		LOGGER.debug("Exporting as blueprint to " + path);
 		try (final OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.APPEND);
 				final ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream))
 		{
 //			outputStream.write(Main.HEADER_BPRINT.getBytes());
-//			outputStream.write(BLUEPRINT_MAGIC_B);
+			LOGGER.trace("Writing magic number...");
 			objectOutputStream.writeLong(BLUEPRINT_MAGIC);
+			LOGGER.trace("Writing version...");
 			objectOutputStream.writeObject(Main.getVersion());
+			LOGGER.trace("Writing main data...");
 			objectOutputStream.writeObject(blueprint);
+			LOGGER.debug("Done exporting!");
 			return true;
 		} catch (IOException e)
 		{
-			e.printStackTrace();
+			LOGGER.warn("Unable to export blueprint!", e);
 			Main.openErrorDialog(e);
 			return false;
 		}
@@ -59,17 +66,22 @@ public class FileUtil
 		if (Files.exists(path))
 			return false;
 		
+		LOGGER.debug("Exporting as simulation to: " + path);
 		try (final OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.APPEND);
 				final ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream))
 		{
 //			outputStream.write(Main.HEADER_SIM.getBytes());
+			LOGGER.trace("Writing magic number...");
 			objectOutputStream.writeLong(SIMULATION_MAGIC);
+			LOGGER.trace("Writing version...");
 			objectOutputStream.writeObject(Main.getVersion());
+			LOGGER.trace("Writing main data...");
 			objectOutputStream.writeObject(simulation);
+			LOGGER.debug("Done exporting!");
 			return true;
 		} catch (IOException e)
 		{
-			e.printStackTrace();
+			LOGGER.warn("Unable to export simulation!", e);
 			Main.openErrorDialog(e);
 			return false;
 		}
@@ -80,17 +92,20 @@ public class FileUtil
 		if (!Files.exists(path))
 			throw new NoSuchFileException("Supplied path does not exist!");
 		
+		LOGGER.debug("Importing as blueprint...");
 		try (final InputStream inputStream = Files.newInputStream(path);
 				final ObjectInputStream objectInputStream = new ObjectInputStream(inputStream))
 		{
 //			final String header = new String(inputStream.readNBytes(HEADER_SIZE));
+			LOGGER.trace("Reading magic number...");
 			final long magic = objectInputStream.readLong();
 			
 			if (magic != BLUEPRINT_MAGIC)
 			{
+				LOGGER.info("Read wrong magic number from file");
 				final Optional<ButtonType> selectedButton =
 						Main.openDialog("Warning!", "MIME type of path " + path + " does not match blueprint file!",
-						"Expected [" + StringUtil.longToHex(BLUEPRINT_MAGIC) + "] but got " + StringUtil.longToHex(magic) + ". This should not be possible and"
+						"Expected 0x" + StringUtil.longToHex(BLUEPRINT_MAGIC) + " but got 0x" + StringUtil.longToHex(magic) + ". This should not be possible and"
 								+ "\n may cause unforeseen consequences in runtime behavior."
 								+ "\nContinue with reading?",
 						AlertType.CONFIRMATION);
@@ -99,11 +114,13 @@ public class FileUtil
 					return;
 			}
 			
+			LOGGER.trace("Reading saved version and comparing...");
 			final Version savedVersion = (Version) objectInputStream.readObject();
 			final int comparison = Main.getVersion().compareTo(savedVersion);
 			
 			if (comparison != 0)
 			{
+				LOGGER.info("Read different version in file than what is running");
 				final String diff = comparison < 0 ? "newer" : "older";
 				
 				final Optional<ButtonType> selectedButton =
@@ -121,7 +138,7 @@ public class FileUtil
 			// TODO
 		} catch (IOException | ClassNotFoundException e)
 		{
-			e.printStackTrace();
+			LOGGER.warn("Unable to read blueprint!", e);
 			Main.openErrorDialog(e);
 		}
 	}

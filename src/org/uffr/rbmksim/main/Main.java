@@ -2,6 +2,8 @@ package org.uffr.rbmksim.main;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.config.ProgramConfig;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.util.I18n;
@@ -19,13 +21,13 @@ import javafx.stage.Stage;
 
 public class Main extends Application
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	// Useful for tracking discrepancies between saved files and the currently running program.
 	private static final Version VERSION = new Version(0, 5, 0, 'a');
 	// Basic strings reused in various places.
-	public static final String
-					EXT_BPRINT = "rbmk",
-					EXT_RSIM = "rsim",
-					KEY;
+	public static final String EXT_BPRINT = "rbmk",
+							   EXT_RSIM = "rsim",
+							   KEY;
 	// Icon of the program.
 	public static final Image ICON_IMAGE = new Image(Main.class.getClassLoader().getResourceAsStream("resources/rad.png"));
 	
@@ -47,12 +49,14 @@ public class Main extends Application
 	
 	public static void main(String[] args)
 	{
+		LOGGER.debug("Entry point begun, launching...");
 		launch(args);
 	}
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception
 	{
+		LOGGER.debug("Starting application...");
 		stage = primaryStage;
 		final Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("resources/main_window.fxml"));
 //        primaryStage.setTitle("NTM RBMK Blueprint Designer & Simulator");
@@ -60,6 +64,7 @@ public class Main extends Application
         primaryStage.setScene(new Scene(root, 720, 480));
         primaryStage.getIcons().add(ICON_IMAGE);
         primaryStage.show();
+        LOGGER.debug("Startup complete");
 	}
 	
 	public static Stage getStage()
@@ -105,18 +110,22 @@ public class Main extends Application
 	
 	public static Optional<ButtonType> openErrorDialog(Exception e)
 	{
-		return openDialog("Error!", "Caught exception while running!", e.toString(), AlertType.ERROR);
+		return openDialog(I18n.resolve("dialog.error.title"), I18n.resolve("dialog.error.header"), e.toString(), AlertType.ERROR);
 	}
+	
 	// TODO I18n
 	public static String getAboutString()
 	{
 		final StringBuilder builder = new StringBuilder(100);
 		builder
-		.append("Author: UFFR_87\n")
-		.append("Version: ").append(VERSION).append('\n')
-		.append("Company: Unnamed Group 13\n")
-		.append("Copyleft: CC BY-SA 4.0 2023\n")
-		.append("License: GLP 3.0");
+//		.append("Author: UFFR_87\n")
+		.append(I18n.resolve("about.author")).append('\n')
+//		.append("Version: ").append(VERSION).append('\n')
+		.append(I18n.resolve("about.version", VERSION)).append('\n')
+//		.append("Company: Unnamed Group 13\n")
+		.append(I18n.resolve("about.company")).append('\n')
+//		.append("License: GPL v3.0");
+		.append(I18n.resolve("about.license"));
 		return builder.toString();
 	}
 }

@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author Basic interface for configurations.
  *
  * @param <T> The configuration class, for {@link #copy(T)}.
+ * 
+ * @deprecated Use {@link ConfigNT}
  */
+@Deprecated
 public interface Config<T>
 {
 	/**

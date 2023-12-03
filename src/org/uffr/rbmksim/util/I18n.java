@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.main.Main;
 
-// TODO Implement
 public class I18n
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(I18n.class);
@@ -25,6 +24,7 @@ public class I18n
 	
 	static
 	{
+		LOGGER.info("Auto-initialization of class I18n has begun");
 		for (Locale locale : LOCALES)
 		{
 			LOCALE_MAP.put(locale, new HashMap<>(ENTRIES));
@@ -47,6 +47,7 @@ public class I18n
 		}
 		currentLocale = Locale.getDefault();
 		currentLangMap = LOCALE_MAP.get(currentLocale);
+		LOGGER.info("I18n initialization complete");
 	}
 	
 	public static Locale getCurrentLocale()
@@ -56,17 +57,19 @@ public class I18n
 	
 	public static void setCurrentLocale(Locale currentLocale)
 	{
+		LOGGER.info("Locale (re)set to: " + currentLocale);
 		I18n.currentLocale = currentLocale;
 		currentLangMap = LOCALE_MAP.get(currentLocale);
 	}
 	
 	public static InputStream getLocaleResource(Locale locale)
 	{
-		return Main.class.getClassLoader().getResourceAsStream("resources/lang/" + locale.getLanguage() + ".lang");
+		return Main.class.getClassLoader().getResourceAsStream("resources/lang/" + locale + ".lang");
 	}
 	
 	public static void initializeLocale(Locale locale, InputStream stream)
 	{
+		LOGGER.trace("Initializing " + locale);
 		try
 		{
 			final String fullString = new String(stream.readAllBytes());
@@ -75,27 +78,32 @@ public class I18n
 			MiscUtil.basicKVToMap(fullString, map);
 		} catch (IOException e)
 		{
+			LOGGER.error("Unable to initialize locale [" + locale + "], this should not be possible!", e);
 			Main.openErrorDialog(e);
 		}
 	}
 	
 	public static boolean hasLocale(Locale locale)
 	{
+		LOGGER.trace("Queried if registry has locale");
 		return LOCALE_MAP.containsKey(locale);
 	}
 	
 	public static boolean hasKey(String key)
 	{
+		LOGGER.trace("Queried if map has key");
 		return currentLangMap.containsKey(key);
 	}
 	
 	public static String resolve(String key)
 	{
+		LOGGER.trace("Resolving [" + key + "] without format");
 		return currentLangMap.getOrDefault(key, key);
 	}
 	
 	public static String resolve(String key, Object... format)
 	{
+		LOGGER.trace("Resolving [" + key + "] with format");
 		return String.format(currentLocale, currentLangMap.getOrDefault(key, key), format);
 	}
 

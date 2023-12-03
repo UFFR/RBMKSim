@@ -1,14 +1,18 @@
 about.author=Author: UFFR
 about.company=Company: Unnamed Group 13
 about.copyleft=Copyleft: CC BY-SA 4.0 2023
-about.license=License: GPL 3.0
+about.license=License: GPL v3.0
 about.version=Version: %s
 
+app.costEstimatorTab.text=Cost Estimator
+app.graphsTab.text=Graphs
+app.mainViewTab.text=Main View
+app.infoTextArea.promptText=[No selection]
 app.title=NTM RBMK Blueprint Designer & Simulator
-app.infoArea=[No selection]
+app.title.about=About
 
-dialog.title.error=Error!
-dialog.header.exception=Caught exception while running!
+dialog.error.title=Error!
+dialog.error.header=Caught exception while running!
 
 column.blank=RBMK Structural Column
 column.fuel=RBMK Fuel Column
@@ -18,6 +22,28 @@ column.controlAuto=RBMK Automatic Control Rod Column
 column.moderator=RBMK Graphite Moderator
 column.absorber=RBMK Boron Neutron Absorber
 column.reflector=RBMK Tungsten-carbide Neutron Reflector
+
+config.program.configPath=Path where configurations (including this one) are stored
+config.program.locale=Locale
+config.program.tickRate=Delay in milliseconds between each tick iteration
+config.program.username=Default username to credit new designs to
+config.program.userPath=Default path to store and look for blueprints and simulations
+
+config.simulation.boilerHeatConsumption=Boiler heat consumption
+config.simulation.columnHeatFlow=Default column heat flow
+config.simulation.controlSpeedMod=Control rod speed modifier
+config.simulation.fluxRange=Flux effective range
+config.simulation.fuelDiffusionMod=Fuel rod heat diffusion modifier
+config.simulation.heatProvision=Heat provision
+config.simulation.outgasserMod=Outgasser modifier
+config.simulation.passiveCooling=Passive cooling rate modifier
+config.simulation.reactivityModifier=Fuel reactivity modifier
+config.simulation.reasimBoilers=ReaSim boilers
+config.simulation.reasimBoilerSpeed=ReaSim boiler speed
+config.simulation.reasimCount=ReaSim count
+config.simulation.reasimMod=ReaSim modifier
+config.simulation.reasimRange=ReaSim range
+config.simulation.surgeMod=Reactivity surge modifier
 
 fuel.category.real=Real/Realistic Fuels
 fuel.category.futuristic=Futuristic Fuels

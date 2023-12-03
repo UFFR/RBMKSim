@@ -26,41 +26,37 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationConfig.class);
 	
 	/// Defaults ///
-	public static final double
-					PASSIVE_COOLING = 1,
-					COLUMN_HEAT_FLOW = 0.2,
-					FUEL_DIFFUSION_MOD = 1,
-					HEAT_PROVISION = 0.4,
-					BOILER_HEAT_CONSUMPTION = 0.1,
-					CONTROL_SPEED_MOD = 1,
-					REACTIVITY_MOD = 1,
-					OUTGASSER_MOD = 1,
-					SURGE_MOD = 1,
-					REASIM_MOD = 1,
-					REASIM_BOILER_SPEED = 0.05;
-	public static final byte
-					FLUX_RANGE = 5,
-					REASIM_RANGE = 10,
-					REASIM_COUNT = 6;
-	public static final boolean REASIM_BOILERS = false;
+	public static final double	PASSIVE_COOLING			= 1,
+								COLUMN_HEAT_FLOW		= 0.2,
+								FUEL_DIFFUSION_MOD		= 1,
+								HEAT_PROVISION			= 0.4,
+								BOILER_HEAT_CONSUMPTION	= 0.1,
+								CONTROL_SPEED_MOD		= 1,
+								REACTIVITY_MOD			= 1,
+								OUTGASSER_MOD			= 1,
+								SURGE_MOD				= 1,
+								REASIM_MOD				= 1,
+								REASIM_BOILER_SPEED		= 0.05;
+	public static final byte	FLUX_RANGE				= 5,
+								REASIM_RANGE			= 10,
+								REASIM_COUNT			= 6;
+	public static final boolean	REASIM_BOILERS			= false;
 	
 	/// Instance ///
-	public double
-				passiveCooling = PASSIVE_COOLING,
-				columnHeatFlow = COLUMN_HEAT_FLOW,
-				fuelDiffusionMod = FUEL_DIFFUSION_MOD,
-				heatProvision = HEAT_PROVISION,
-				boilerHeatConsumption = BOILER_HEAT_CONSUMPTION,
-				controlSpeedMod = CONTROL_SPEED_MOD,
-				reactivityMod = REACTIVITY_MOD,
-				outgasserMod = OUTGASSER_MOD,
-				surgeMod = SURGE_MOD,
-				reasimMod = REASIM_MOD,
-				reasimBoilerSpeed = REASIM_BOILER_SPEED;
-	public int
-				fluxRange = FLUX_RANGE,
-				reasimRange = REASIM_RANGE,
-				reasimCount = REASIM_COUNT;
+	public double passiveCooling = PASSIVE_COOLING,
+				  columnHeatFlow = COLUMN_HEAT_FLOW,
+				  fuelDiffusionMod = FUEL_DIFFUSION_MOD,
+				  heatProvision = HEAT_PROVISION,
+				  boilerHeatConsumption = BOILER_HEAT_CONSUMPTION,
+				  controlSpeedMod = CONTROL_SPEED_MOD,
+				  reactivityMod = REACTIVITY_MOD,
+				  outgasserMod = OUTGASSER_MOD,
+				  surgeMod = SURGE_MOD,
+				  reasimMod = REASIM_MOD,
+				  reasimBoilerSpeed = REASIM_BOILER_SPEED;
+	public int fluxRange = FLUX_RANGE,
+			   reasimRange = REASIM_RANGE,
+			   reasimCount = REASIM_COUNT;
 	public boolean reasimBoilers = REASIM_BOILERS;
 	
 	public SimulationConfig()
