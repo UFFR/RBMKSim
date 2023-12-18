@@ -32,7 +32,7 @@ public class I18n
 
 			if (stream == null)
 			{
-				LOGGER.debug("Initialization stream null, locale %s just probably has no localization file.", locale);
+				LOGGER.trace("Initialization stream null, locale %s probably just has no localization file", locale);
 				continue;
 			}
 			

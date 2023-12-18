@@ -8,6 +8,7 @@ import org.uffr.rbmksim.config.ProgramConfig;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.uffrlib.misc.Version;
+import org.uffr.uffrlib.misc.Version.VersionSuffix;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -23,7 +24,7 @@ public class Main extends Application
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	// Useful for tracking discrepancies between saved files and the currently running program.
-	private static final Version VERSION = new Version(0, 5, 0, 'a');
+	private static final Version VERSION = new Version(0, 5, 0, VersionSuffix.SNAPSHOT);
 	// Basic strings reused in various places.
 	public static final String EXT_BPRINT = "rbmk",
 							   EXT_RSIM = "rsim",
@@ -41,6 +42,7 @@ public class Main extends Application
 	
 	static
 	{
+		// TODO Probably deprecate this
 		final StringBuilder builder = new StringBuilder(150);
 		for (ColumnType type : ColumnType.values())
 			builder.append(type.symbol).append(": ").append(type.fullName).append(" Column\n");
@@ -95,11 +97,12 @@ public class Main extends Application
 	
 	public static Version getVersion()
 	{
-		return VERSION.clone();
+		return VERSION;
 	}
 	
-	public static Optional<ButtonType> openDialog(String title, String headerMessage, String contentMessage, AlertType type)
+	public static Optional<ButtonType> openDialogAndWait(String title, String headerMessage, String contentMessage, AlertType type)
 	{
+		LOGGER.debug("Main.openDialogAndWait() triggered");
 		final Alert alert = new Alert(type);
 		alert.setTitle(title);
 		alert.setHeaderText(headerMessage);
@@ -108,23 +111,31 @@ public class Main extends Application
 		return alert.showAndWait();
 	}
 	
-	public static Optional<ButtonType> openErrorDialog(Exception e)
+	public static void openDialog(String title, String headerMessage, String contentMessage, AlertType type)
 	{
-		return openDialog(I18n.resolve("dialog.error.title"), I18n.resolve("dialog.error.header"), e.toString(), AlertType.ERROR);
+		LOGGER.debug("Main.openDialog() triggered");
+		final Alert alert = new Alert(type);
+		alert.setTitle(title);
+		alert.setHeaderText(headerMessage);
+		alert.setContentText(contentMessage);
+		((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(ICON_IMAGE);
+		alert.show();
 	}
 	
-	// TODO I18n
+	public static void openErrorDialog(Exception e)
+	{
+		LOGGER.debug("Main.openErrorDialog() triggered");
+		openDialog(I18n.resolve("dialog.error.title"), I18n.resolve("dialog.error.header"), e.toString(), AlertType.ERROR);
+	}
+	
 	public static String getAboutString()
 	{
+		LOGGER.debug("Main.getAboutString() triggered");
 		final StringBuilder builder = new StringBuilder(100);
 		builder
-//		.append("Author: UFFR_87\n")
 		.append(I18n.resolve("about.author")).append('\n')
-//		.append("Version: ").append(VERSION).append('\n')
 		.append(I18n.resolve("about.version", VERSION)).append('\n')
-//		.append("Company: Unnamed Group 13\n")
 		.append(I18n.resolve("about.company")).append('\n')
-//		.append("License: GPL v3.0");
 		.append(I18n.resolve("about.license"));
 		return builder.toString();
 	}

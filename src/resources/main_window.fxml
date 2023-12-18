@@ -154,7 +154,7 @@
                               <Insets />
                            </HBox.margin>
                         </TextArea>
-                        <TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="360.0" prefWidth="480.0" tabClosingPolicy="UNAVAILABLE">
+                        <TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="360.0" prefWidth="480.0" tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
                           <tabs>
                             <Tab fx:id="mainViewTab" closable="false" text="Main View">
                                  <content>
@@ -168,7 +168,7 @@
                                 <content>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                        <children>
-                                          <LineChart title="Average Heat" AnchorPane.bottomAnchor="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <LineChart fx:id="mainGraph" title="Average Heat" AnchorPane.bottomAnchor="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                             <xAxis>
                                               <CategoryAxis side="BOTTOM" />
                                             </xAxis>
@@ -179,7 +179,7 @@
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                              </padding>
                                           </LineChart>
-                                          <ChoiceBox layoutX="14.0" layoutY="252.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="280.0">
+                                          <ChoiceBox fx:id="graphSelectionBox" layoutX="14.0" layoutY="252.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="280.0">
                                              <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                              </padding>
@@ -208,7 +208,7 @@
                            <children>
                               <Accordion>
                                 <panes>
-                                  <TitledPane text="Frame Options" wrapText="true">
+                                  <TitledPane fx:id="frameInfoPane" text="RBMK Info" wrapText="true">
                                     <content>
                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                              <padding>
@@ -235,12 +235,12 @@
                                           </AnchorPane>
                                     </content>
                                   </TitledPane>
-                                  <TitledPane text="Column Options" wrapText="true">
+                                  <TitledPane fx:id="frameOptionsPane" text="Frame Options" wrapText="true">
                                     <content>
                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                                     </content>
                                   </TitledPane>
-                                  <TitledPane text="untitled 3" wrapText="true">
+                                  <TitledPane fx:id="columnOptionsPane" text="Column Options" wrapText="true">
                                     <content>
                                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                                     </content>

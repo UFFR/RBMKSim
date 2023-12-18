@@ -3,6 +3,14 @@ package org.uffr.rbmksim.util;
 import java.io.Serializable;
 import java.util.function.Function;
 
+/**
+ * 
+ * @author UFFR
+ *
+ * @param <T> Type
+ * @deprecated Likely no longer needed due to not using Swing anymore
+ */
+@Deprecated
 public class StringExtractor<T> implements Serializable
 {
 	private static final long serialVersionUID = -5110263921630894098L;

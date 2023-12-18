@@ -3,7 +3,7 @@ package org.uffr.rbmksim.main;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.Serializable;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -54,9 +54,10 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	protected transient RBMKRenderHelper renderer;
 	// Basic information about the RBMK: the design's name, its creator, and the version. All may be empty.
 	protected String name, creatorName, version;
-	protected OffsetDateTime date;
+	protected LocalDate date;
 	// Some quick tracking values, a timer for delays, and a tick counter.
-	protected int rows = DEFAULT_SIZE, columns = DEFAULT_SIZE, graphTimer, ticks;
+	protected int rows = DEFAULT_SIZE, columns = DEFAULT_SIZE, ticks;
+	protected transient int graphTimer;
 	
 	public RBMKFrame(Canvas canvas)
 	{
@@ -65,10 +66,11 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		config = new SimulationConfig();
 		grid = new ExpandingArrayMatrix<>(DEFAULT_SIZE, DEFAULT_SIZE);
 		registeredLocations = new HashSet<>(DEFAULT_SIZE * DEFAULT_SIZE);
-		date = OffsetDateTime.now();
+		date = LocalDate.now();
 		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D());
 	}
 	
+	// What is this, C++?
 	public RBMKFrame(RBMKFrame frame)
 	{
 		this.canvas = frame.canvas;
@@ -80,7 +82,6 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		this.version = frame.version;
 		this.rows = frame.rows;
 		this.columns = frame.columns;
-		this.graphTimer = frame.graphTimer;
 		this.date = frame.date;
 		// Probably shouldn't copy ticks if it's a new frame
 		
@@ -105,6 +106,12 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 //	public abstract InternalImage renderToImage();
 	
+	protected RBMKRenderHelper getRenderer()
+	{
+		// In case it was deserialized
+		return renderer == null ? renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D()) : renderer;
+	}
+	
 	/**
 	 * Tick over every matrix cell with a column. By default, only renders.
 	 */
@@ -113,7 +120,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		// We can be pretty sure registeredLocations is valid.
 //		for (GridLocation location : registeredLocations)
 //			getColumnAtCoords(location).render(location.getX(), location.getY(), canvas.getGraphicsContext2D());
-		grid.stream().filter(Objects::nonNull).filter(RBMKColumnBase::shouldRender).forEach(renderer::renderColumn);
+		grid.stream().filter(Objects::nonNull).filter(RBMKColumnBase::shouldRender).forEach(getRenderer()::renderColumn);
 		ticks++;
 	}
 	
@@ -158,14 +165,19 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		return version;
 	}
 	
-	public void setDate(OffsetDateTime date)
+	public void setDate(LocalDate date)
 	{
 		this.date = date;
 	}
 	
-	public OffsetDateTime getDate()
+	public LocalDate getDate()
 	{
 		return date;
+	}
+	
+	public int getTicks()
+	{
+		return ticks;
 	}
 	
 	/**
@@ -385,7 +397,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	@Override
 	public void funnelInto(PrimitiveSink sink)
 	{
-		sink.putInt(rows).putInt(columns).putInt(graphTimer).putInt(ticks).putString(name, UTF_8).putString(creatorName, UTF_8).putString(version, UTF_8);
+		sink.putInt(rows).putInt(columns).putInt(ticks).putString(name, UTF_8).putString(creatorName, UTF_8).putString(version, UTF_8);
 		config.funnelInto(sink);
 		grid.forEach(c -> c.funnelInto(sink));
 		registeredLocations.forEach(l -> GridLocation.FUNNEL.funnel(l, sink));
@@ -408,8 +420,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(columns, config, creatorName, graphTimer, grid, name, registeredLocations, rows, ticks,
-				version);
+		return Objects.hash(columns, config, creatorName, date, grid, name, registeredLocations, rows, ticks, version);
 	}
 	
 	@Override
@@ -421,7 +432,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 			return false;
 		final RBMKFrame other = (RBMKFrame) obj;
 		return columns == other.columns && Objects.equals(config, other.config)
-				&& Objects.equals(creatorName, other.creatorName) && graphTimer == other.graphTimer
+				&& Objects.equals(creatorName, other.creatorName) && Objects.equals(date, other.date)
 				&& Objects.equals(grid, other.grid) && Objects.equals(name, other.name)
 				&& Objects.equals(registeredLocations, other.registeredLocations) && rows == other.rows
 				&& ticks == other.ticks && Objects.equals(version, other.version);

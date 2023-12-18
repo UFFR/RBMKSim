@@ -10,11 +10,13 @@ import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
 
 public class MiscUtil
 {
+	@Deprecated
 	public static StringExtractor<RBMKFuelData> fuelDataExtractor(RBMKFuelData data)
 	{
 		return new StringExtractor<RBMKFuelData>(data, RBMKFuelData::name);
 	}
 	
+	@Deprecated
 	public static List<StringExtractor<RBMKFuelData>> wrapDataList(List<RBMKFuelData> fuelDatas)
 	{
 		final List<StringExtractor<RBMKFuelData>> extractors = new ArrayList<StringExtractor<RBMKFuelData>>(fuelDatas.size());

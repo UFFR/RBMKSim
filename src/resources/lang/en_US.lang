@@ -1,12 +1,18 @@
 about.author=Author: UFFR
 about.company=Company: Unnamed Group 13
-about.copyleft=Copyleft: CC BY-SA 4.0 2023
 about.license=License: GPL v3.0
 about.version=Version: %s
 
+app.creatorTextField.promptText=Name of the creator
+app.columnOptionsPane.text=Column Options
 app.costEstimatorTab.text=Cost Estimator
+app.frameInfoPane.text=RBMK Info
+app.frameOptionsPane.text=Frame Options
 app.graphsTab.text=Graphs
+app.graphType.flux=Average Flux
+app.graphType.heat=Average Heat
 app.mainViewTab.text=Main View
+app.nameTextField.promptText=Name of the design
 app.infoTextArea.promptText=[No selection]
 app.title=NTM RBMK Blueprint Designer & Simulator
 app.title.about=About
@@ -21,7 +27,7 @@ column.controlManual=RBMK Control Rod Column
 column.controlAuto=RBMK Automatic Control Rod Column
 column.moderator=RBMK Graphite Moderator
 column.absorber=RBMK Boron Neutron Absorber
-column.reflector=RBMK Tungsten-carbide Neutron Reflector
+column.reflector=RBMK Tungsten carbide Neutron Reflector
 
 config.program.configPath=Path where configurations (including this one) are stored
 config.program.locale=Locale

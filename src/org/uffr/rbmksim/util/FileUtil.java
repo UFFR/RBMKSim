@@ -104,7 +104,7 @@ public class FileUtil
 			{
 				LOGGER.info("Read wrong magic number from file");
 				final Optional<ButtonType> selectedButton =
-						Main.openDialog("Warning!", "MIME type of path " + path + " does not match blueprint file!",
+						Main.openDialogAndWait("Warning!", "MIME type of path " + path + " does not match blueprint file!",
 						"Expected 0x" + StringUtil.longToHex(BLUEPRINT_MAGIC) + " but got 0x" + StringUtil.longToHex(magic) + ". This should not be possible and"
 								+ "\n may cause unforeseen consequences in runtime behavior."
 								+ "\nContinue with reading?",
@@ -124,7 +124,7 @@ public class FileUtil
 				final String diff = comparison < 0 ? "newer" : "older";
 				
 				final Optional<ButtonType> selectedButton =
-						Main.openDialog("Warning!",
+						Main.openDialogAndWait("Warning!",
 								  "Version of program that produced blueprint file is " + diff + " than"
 								+ " running version.",
 								  "File was made by program version " + savedVersion + ", "
