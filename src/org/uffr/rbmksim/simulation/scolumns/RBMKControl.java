@@ -1,5 +1,8 @@
 package org.uffr.rbmksim.simulation.scolumns;
 
+import static org.uffr.rbmksim.util.RBMKRenderHelper.CELL_SIZE;
+import static org.uffr.rbmksim.util.RBMKRenderHelper.LINE_WIDTH;
+
 import java.util.Objects;
 
 import com.google.common.hash.PrimitiveSink;

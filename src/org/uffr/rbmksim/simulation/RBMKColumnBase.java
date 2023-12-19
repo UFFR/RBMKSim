@@ -4,7 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.config.SimulationConfig;
+import org.uffr.rbmksim.main.Main;
 import org.uffr.rbmksim.main.RBMKFrame;
 import org.uffr.rbmksim.util.InfoProvider;
 import org.uffr.uffrlib.hashing.Hashable;
@@ -12,20 +15,21 @@ import org.uffr.uffrlib.hashing.Hashable;
 import com.google.common.hash.PrimitiveSink;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializable
 {
 	private static final long serialVersionUID = -4281135799096443502L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKColumnBase.class);
+	protected static RBMKFrame currentFrame;
 	public static final short MAX_WATER = 16000, MAX_STEAM = 16000, MAX_HEAT_DEFAULT = 1500;
-	// Render size for cells.
-	public static final byte CELL_SIZE = 20, LINE_WIDTH = 4;
 	
+	@Deprecated
 	protected transient RBMKFrame rbmkFrame;
 	protected final GridLocation location;
 	protected boolean shouldRender = true;
 	public RBMKColumnBase(GridLocation location, RBMKFrame frame)
 	{
+		LOGGER.trace("New RBMKColumnBase constructed");
 		this.location = location;
 		this.rbmkFrame = frame;
 	}
@@ -38,6 +42,7 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 	public RBMKColumnBase(RBMKColumnBase column, GridLocation location)
 	{
 		this(location, column.rbmkFrame);
+		LOGGER.trace("RBMKColumnBase copy constructor called");
 	}
 
 	public abstract ColumnType getColumnType();
@@ -47,6 +52,7 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 	
 	public void setRbmkFrame(RBMKFrame rbmkFrame)
 	{
+		LOGGER.debug("Column RBMKFrame changed");
 		this.rbmkFrame = rbmkFrame;
 	}
 	
@@ -104,15 +110,9 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 	@Override
 	public abstract String toString();
 
-	public static void renderBackground(GridLocation location, GraphicsContext graphics)
+	protected static RBMKFrame getFrame()
 	{
-		graphics.setFill(Color.GRAY);
-		graphics.fillRect(location.getX(), location.getY(), location.getX() + CELL_SIZE, location.getY() + CELL_SIZE);
+		return currentFrame == null ? currentFrame = Main.getFrame().get() : currentFrame;
 	}
 	
-	public static void renderEdges(GridLocation location, GraphicsContext graphics)
-	{
-		graphics.setLineWidth(4);
-		graphics.rect(location.getX(), location.getY(), location.getX() + CELL_SIZE, location.getY() + CELL_SIZE);
-	}
 }

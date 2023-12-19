@@ -1,14 +1,13 @@
 package org.uffr.rbmksim.util;
 
-import static org.uffr.rbmksim.simulation.RBMKColumnBase.CELL_SIZE;
-import static org.uffr.rbmksim.simulation.RBMKColumnBase.LINE_WIDTH;
-
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
@@ -24,7 +23,10 @@ import javafx.scene.paint.Color;
 
 public class RBMKRenderHelper
 {
-	public static final Color BACKGROUND_COLOR = Color.DARKGRAY;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKRenderHelper.class);
+	// Render size for cells.
+	public static final byte CELL_SIZE = 20, LINE_WIDTH = 4;
+	public static final Color BACKGROUND_COLOR = Color.LIGHTGREY;
 	private final Canvas canvas;
 	private final GraphicsContext graphics;
 	private final Queue<Consumer<GraphicsContext>> renderQueue = new ArrayDeque<>();
@@ -32,6 +34,7 @@ public class RBMKRenderHelper
 	
 	public RBMKRenderHelper(int rows, int cols)
 	{
+		LOGGER.debug("Type 1 renderer constructed");
 		canvas = new Canvas(cols, rows);
 		
 		graphics = canvas.getGraphicsContext2D();
@@ -44,6 +47,7 @@ public class RBMKRenderHelper
 	
 	public RBMKRenderHelper(Canvas canvas, GraphicsContext graphics)
 	{
+		LOGGER.debug("Type 2 renderer constructed");
 		this.canvas = canvas;
 		this.graphics = graphics;
 		
@@ -55,18 +59,22 @@ public class RBMKRenderHelper
 	
 	public void reset()
 	{
+		LOGGER.debug("Current rendering reset");
 		graphics.setFill(BACKGROUND_COLOR);
+		graphics.rect(0, 0, canvas.getWidth(), canvas.getHeight());
 		graphics.fill();
 	}
 	
 	public void flush()
 	{
+		LOGGER.debug("Flushing render queue");
 		while (!renderQueue.isEmpty())
 			renderQueue.poll().accept(graphics);
 	}
 	
 	public void renderColumn(RBMKColumnBase column)
 	{
+		LOGGER.debug("New column at {} offered to render queue", column.getLocation());
 		renderQueue.offer(column::render);
 	}
 	
@@ -93,6 +101,7 @@ public class RBMKRenderHelper
 	// AAAAAAAAAAAAAAAAAA
 	public void save(Path path)
 	{
+		LOGGER.debug("Saving renders to file...");
 		if (!renderQueue.isEmpty())
 			flush();
 		
@@ -118,13 +127,14 @@ public class RBMKRenderHelper
 	
 	public static void genericRender(ColumnType type, GridLocation location, GraphicsContext graphics)
 	{
-		RBMKColumnBase.renderBackground(location, graphics);
+		LOGGER.debug("Generic render handler requested for type {} at {}", type, location);
+		renderBackground(location, graphics);
 		graphics.setLineWidth(LINE_WIDTH);
 		switch (type)
 		{
 			case ABSORBER:
 				graphics.setFill(Color.DARKGRAY);
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.fillRect((location.getX() + LINE_WIDTH) * CELL_SIZE, (location.getY() + LINE_WIDTH) * CELL_SIZE, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
 				break;
 			case BOILER:
 				graphics.setFill(Color.BLACK);
@@ -180,6 +190,21 @@ public class RBMKRenderHelper
 			case BLANK:
 			default: break;
 		}
-		RBMKColumnBase.renderEdges(location, graphics);
+		renderEdges(location, graphics);
+	}
+	
+	public static void renderBackground(GridLocation location, GraphicsContext graphics)
+	{
+		LOGGER.trace("Rendering background...");
+		graphics.setFill(Color.GRAY);
+		graphics.fillRect(location.getX() * CELL_SIZE, location.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+	}
+	
+	public static void renderEdges(GridLocation location, GraphicsContext graphics)
+	{
+		LOGGER.trace("Rendering edges...");
+		graphics.setLineWidth(LINE_WIDTH);
+		graphics.setFill(Color.BLACK);
+		graphics.rect(location.getX() * CELL_SIZE, location.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 	}
 }

@@ -33,12 +33,13 @@ public class Main extends Application
 	public static final Image ICON_IMAGE = new Image(Main.class.getClassLoader().getResourceAsStream("resources/rad.png"));
 	
 	// The current frame.
-	protected static Optional<RBMKFrame> frame = Optional.empty();
+//	protected static Optional<RBMKFrame> frame = Optional.empty();
+	protected static FrameRunner runner = new FrameRunner();
 	public static ProgramConfig config = new ProgramConfig();
 	// JavaFX stage
 	private static Stage stage;
 	// If the simulation is running, paused otherwise.
-	private static boolean running = false;
+//	private static boolean running = false;
 	
 	static
 	{
@@ -58,15 +59,14 @@ public class Main extends Application
 	@Override
 	public void start(Stage primaryStage) throws Exception
 	{
-		LOGGER.debug("Starting application...");
+		LOGGER.info("Starting application...");
 		stage = primaryStage;
 		final Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("resources/main_window.fxml"));
-//        primaryStage.setTitle("NTM RBMK Blueprint Designer & Simulator");
 		primaryStage.setTitle(I18n.resolve("app.title"));
         primaryStage.setScene(new Scene(root, 720, 480));
         primaryStage.getIcons().add(ICON_IMAGE);
         primaryStage.show();
-        LOGGER.debug("Startup complete");
+        LOGGER.info("Startup complete");
 	}
 	
 	public static Stage getStage()
@@ -76,23 +76,29 @@ public class Main extends Application
 	
 	public static void setRunning(boolean running)
 	{
-		Main.running = running;
+//		Main.running = running;
+		runner.setActive(running);
 		// TODO Some kind of trigger to initiate the simulation again.
 	}
 	
 	public static boolean isRunning()
 	{
-		return running;
+		return runner.isActive();
 	}
 	
-	public static boolean simulationPresent()
+	public static Optional<RBMKFrame> getFrame()
 	{
-		return frame.isPresent();
+		return runner.getFrame();
 	}
 	
-	public static RBMKFrame getSimulation()
+	public static void setFrame(RBMKFrame frame)
 	{
-		return frame.get();
+		runner.setFrame(frame);
+	}
+	
+	public static void closeFrame()
+	{
+		runner.close();
 	}
 	
 	public static Version getVersion()
@@ -137,6 +143,16 @@ public class Main extends Application
 		.append(I18n.resolve("about.version", VERSION)).append('\n')
 		.append(I18n.resolve("about.company")).append('\n')
 		.append(I18n.resolve("about.license"));
+		return builder.toString();
+	}
+	
+	public static String getCreditsString()
+	{
+		// TODO Finish credits
+		LOGGER.debug("Main.getCreditsString() triggered");
+		final StringBuilder builder = new StringBuilder(200);
+		builder
+		.append('\u2022').append(I18n.resolve("credits.java"));
 		return builder.toString();
 	}
 }

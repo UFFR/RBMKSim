@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintBoiler;
@@ -24,34 +26,42 @@ import javafx.scene.canvas.Canvas;
 public class RBMKBlueprint extends RBMKFrame
 {
 	private static final long serialVersionUID = 2357399660826941002L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKBlueprint.class);
 
 	public RBMKBlueprint(Canvas canvas)
 	{
 		super(canvas);
+		LOGGER.debug("Generic RBMKBlueprint constructed");
 	}
 	
 	public RBMKBlueprint(RBMKFrame frame)
 	{
 		super(frame);
+		LOGGER.debug("RBMKBlueprint copy constructor called");
 		
 		if (frame instanceof RBMKSimulation)
 			convertColumns();
-		else
+		else if (!(frame instanceof RBMKBlueprint))
 			throw new IllegalArgumentException("Frame is of unknown type: " + frame.getClass());
 	}
 	
 	@Override
 	public void checkForDiscrepancies(List<String> discrepancies, boolean repair)
 	{
+		LOGGER.debug("Checking for errors...");
+		String message;
 		for (RBMKColumnBase column : grid)
 		{
 			final GridLocation loc = column.getLocation();
 //			final RBMKColumnBase column = grid.get(loc.getX(), loc.getX());
 			if (!loc.equals(column.getLocation()))
 			{
-				discrepancies.add("Column at " + loc + " has an inconsistent with grid location, internally claims to be at " + column.getLocation() + ", possible corruption?");
+				message = "Column at " + loc + " has an inconsistent with grid location, internally claims to be at " + column.getLocation() + ", possible corruption?";
+				LOGGER.trace(message);
+				discrepancies.add(message);
 				if (repair)
 				{
+					LOGGER.trace("Fixing...");
 					grid.remove(loc.getX(), loc.getX());
 					registeredLocations.remove(loc);
 					continue;
@@ -59,9 +69,12 @@ public class RBMKBlueprint extends RBMKFrame
 			}
 			if (!validCoords(loc))
 			{
-				discrepancies.add("Column at " + loc + " is not within the bounds of the simulation.");
+				message = "Column at " + loc + " is not within the bounds of the simulation.";
+				LOGGER.trace(message);
+				discrepancies.add(message);
 				if (repair)
 				{
+					LOGGER.trace("Fixing...");
 					grid.remove(loc.getX(), loc.getX());
 					registeredLocations.remove(loc);
 					continue;
@@ -110,6 +123,7 @@ public class RBMKBlueprint extends RBMKFrame
 	@Override
 	public void convertColumns()
 	{
+		LOGGER.debug("Converting columns to correct type...");
 		for (int i = 0, matrixSize = grid.totalCells(); i < matrixSize; i++)
 		{
 			final int row = i / columns;

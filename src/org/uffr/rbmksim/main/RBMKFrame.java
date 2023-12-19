@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.config.SimulationConfig;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
@@ -28,7 +30,7 @@ import javafx.scene.canvas.Canvas;
  * <br>
  * Holds a matrix where columns are held, a set of valid locations within said matrix, a canvas for rendering, and some other basic information.
  * <br>
- * Since it is a matrix, coordinates are 0-indexed and begin at the top left corner, similar to a table.
+ * Since it is a matrix, coordinates are 0-indexed but begin at the top left corner, similar to a table.
  * <br>
  * <h6>Note on terminology:</h6>
  * <li> <i>Frame</i>: This, the container for the RBMK grid and associated data.
@@ -41,6 +43,8 @@ import javafx.scene.canvas.Canvas;
 public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 {
 	private static final long serialVersionUID = 6249022375925162759L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKFrame.class);
+	private static int creationCount = 1;
 	public static final byte DEFAULT_SIZE = 15;
 	// Configuration instance for use by concrete classes as needed.
 	protected final SimulationConfig config;
@@ -61,6 +65,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public RBMKFrame(Canvas canvas)
 	{
+		LOGGER.info("Generic RBMKFrame constructor called");
 		this.canvas = canvas;
 		
 		config = new SimulationConfig();
@@ -68,11 +73,18 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		registeredLocations = new HashSet<>(DEFAULT_SIZE * DEFAULT_SIZE);
 		date = LocalDate.now();
 		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D());
+		
+		// Defaults
+		name = "Untitled" + creationCount++;
+		creatorName = Main.config.username;
+		version = "1.0.0";
+		date = LocalDate.now();
 	}
 	
 	// What is this, C++?
 	public RBMKFrame(RBMKFrame frame)
 	{
+		LOGGER.info("RBMKFrame copy constructor called");
 		this.canvas = frame.canvas;
 		this.config = frame.config.clone();
 		this.grid = new ExpandingArrayMatrix<>(frame.grid);
@@ -82,6 +94,9 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		this.version = frame.version;
 		this.rows = frame.rows;
 		this.columns = frame.columns;
+		this.name = frame.name;
+		this.creatorName = frame.creatorName;
+		this.version = frame.version;
 		this.date = frame.date;
 		// Probably shouldn't copy ticks if it's a new frame
 		
@@ -106,27 +121,44 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 //	public abstract InternalImage renderToImage();
 	
+	/**
+	 * The render helper associated with this frame.
+	 * @return A render helper class.
+	 */
 	protected RBMKRenderHelper getRenderer()
 	{
+		LOGGER.trace("RBMKFrame.getRenderer() called...");
 		// In case it was deserialized
 		return renderer == null ? renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D()) : renderer;
 	}
 	
 	/**
-	 * Tick over every matrix cell with a column. By default, only renders.
+	 * Tick over every matrix cell with a column.
 	 */
+	@SuppressWarnings("static-method")
 	public void tick()
 	{
+		LOGGER.trace("RBMKFrame ticked...");
 		// We can be pretty sure registeredLocations is valid.
 //		for (GridLocation location : registeredLocations)
 //			getColumnAtCoords(location).render(location.getX(), location.getY(), canvas.getGraphicsContext2D());
+//		ticks++;
+	}
+	
+	public void render()
+	{
+		LOGGER.debug("RBMKFrame.render() called...");
 		grid.stream().filter(Objects::nonNull).filter(RBMKColumnBase::shouldRender).forEach(getRenderer()::renderColumn);
-		ticks++;
+//		for (RBMKColumnBase col : grid)
+//			if (col != null && col.shouldRender())
+//				getRenderer().renderColumn(col);
+		renderer.flush();
 	}
 	
 	// Change the canvas, if needed.
 	public void setCanvas(Canvas canvas)
 	{
+		LOGGER.debug("RBMKFrame Canvas reset...");
 		this.canvas = canvas;
 	}
 	
@@ -137,6 +169,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setName(String name)
 	{
+		LOGGER.debug("RBMKFrame name changed to: {}", name);
 		this.name = name;
 	}
 	
@@ -147,6 +180,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setCreatorName(String creatorName)
 	{
+		LOGGER.debug("RBMKFrame creator changed to: {}", creatorName);
 		this.creatorName = creatorName;
 	}
 	
@@ -157,6 +191,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setVersion(String version)
 	{
+		LOGGER.debug("RBMKFrame version changed to: {}", version);
 		this.version = version;
 	}
 	
@@ -167,6 +202,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setDate(LocalDate date)
 	{
+		LOGGER.debug("RBMKFrame date changed to: {}", date);
 		this.date = date;
 	}
 	
@@ -187,8 +223,10 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public boolean addColumn(RBMKColumnBase column)
 	{
+		LOGGER.debug("Attempting to add column at: {}", column.getLocation());
 		if (!validCoords(column.getLocation()))
 			return false;
+		LOGGER.trace("Column was accepted");
 		grid.set(column.getLocation().getX(), column.getLocation().getY(), column);
 		registeredLocations.add(column.getLocation());
 		return true;
@@ -201,6 +239,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public void removeColumn(int x, int y)
 	{
+		LOGGER.debug("Removing column at: [x={}, y={}]", x, y);
 		grid.remove(x, y);
 		registeredLocations.removeIf(loc -> loc.getX() == x && loc.getY() == y);
 	}
@@ -284,6 +323,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	protected void removeInvalid()
 	{
+		LOGGER.debug("RBMKFrame removing invalid values...");
 		grid.removeIf(col -> invalidCoords(col.getLocation()));
 		registeredLocations.removeIf(this::invalidCoords);
 	}
@@ -293,6 +333,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public void reset()
 	{
+		LOGGER.debug("RBMKFrame resetting state...");
 		grid.stream().filter(Objects::nonNull).forEach(RBMKColumnBase::reset);
 		ticks = 0;
 	}
@@ -314,6 +355,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setRows(int rows)
 	{
+		LOGGER.debug("Changed row count from {} to {}", this.rows, rows);
 		final int diff = rows - this.rows;
 		final boolean shouldCheck = diff < 0;
 		this.rows = rows;
@@ -327,6 +369,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setColumns(int columns)
 	{
+		LOGGER.debug("Changed column count from {} to {}", this.columns, columns);
 		final int diff = columns - this.columns;
 		final boolean shouldCheck = diff < 0;
 		this.columns = columns;
@@ -343,6 +386,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public void incrementRows()
 	{
+		LOGGER.debug("Incrementing rows from {}", rows);
 		rows++;
 		grid.addRow();
 	}
@@ -352,6 +396,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public void incrementColumns()
 	{
+		LOGGER.debug("Incrementing columns from {}", columns);
 		columns++;
 		grid.addCol();
 	}
@@ -361,6 +406,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public void decrementRows()
 	{
+		LOGGER.debug("Decrementing rows from {}", rows);
 		rows--;
 		grid.removeRow();
 		removeInvalid();
@@ -371,6 +417,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public void decrementColumns()
 	{
+		LOGGER.debug("Decrementing columns from {}", columns);
 		columns--;
 		grid.removeCol();
 		removeInvalid();

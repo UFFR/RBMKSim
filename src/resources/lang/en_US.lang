@@ -9,13 +9,18 @@ app.costEstimatorTab.text=Cost Estimator
 app.frameInfoPane.text=RBMK Info
 app.frameOptionsPane.text=Frame Options
 app.graphsTab.text=Graphs
+app.graphType.coolant=Average Coolant Production
 app.graphType.flux=Average Flux
 app.graphType.heat=Average Heat
+app.graphType.power=Average Estimated Idealized Power Output
+app.graphType.steam=Average Steam Production
+app.header.credits=RBMK Simulator Credits
 app.mainViewTab.text=Main View
 app.nameTextField.promptText=Name of the design
 app.infoTextArea.promptText=[No selection]
 app.title=NTM RBMK Blueprint Designer & Simulator
 app.title.about=About
+app.title.credits=Credits
 
 dialog.error.title=Error!
 dialog.error.header=Caught exception while running!
@@ -31,7 +36,7 @@ column.reflector=RBMK Tungsten carbide Neutron Reflector
 
 config.program.configPath=Path where configurations (including this one) are stored
 config.program.locale=Locale
-config.program.tickRate=Delay in milliseconds between each tick iteration
+config.program.tickRate=Additional delay in milliseconds between each tick iteration
 config.program.username=Default username to credit new designs to
 config.program.userPath=Default path to store and look for blueprints and simulations
 
@@ -50,6 +55,8 @@ config.simulation.reasimCount=ReaSim count
 config.simulation.reasimMod=ReaSim modifier
 config.simulation.reasimRange=ReaSim range
 config.simulation.surgeMod=Reactivity surge modifier
+
+credits.java=#java on Libera.chat
 
 fuel.category.real=Real/Realistic Fuels
 fuel.category.futuristic=Futuristic Fuels
@@ -102,7 +109,7 @@ fuelx.xenon=Lead poison: %s%%
 fuelx.xenonGen=Lead creation function: x * %s
 fuelx.xenonBurn=Lead destruction function: x² * %s
 
-fuel.desc.ueu=Unenriched Uranium
-fuel.name.ueu=NU Fuel
-fuel.desc.drx=Can you hear? Can you hear the thunder?
-fuel.name.drx=Digamma Fuel
+fuel.type.desc.ueu=Unenriched Uranium
+fuel.type.name.ueu=NU Fuel
+fuel.type.desc.drx=Can you hear? Can you hear the thunder?
+fuel.type.name.drx=Digamma Fuel

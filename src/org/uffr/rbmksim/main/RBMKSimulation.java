@@ -2,8 +2,6 @@ package org.uffr.rbmksim.main;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
@@ -25,16 +23,15 @@ public class RBMKSimulation extends RBMKFrame
 	private static final long serialVersionUID = 5530885107200613696L;
 	public static final byte TICK = 50;
 	private boolean meltedDown = false, running = false;
-	private final transient Timer timer = new Timer("RBMK_SIMULATION");
-	private static final TimerTask TICK_TASK = new TimerTask()
-		{
-			@Override public void run() {Main.getSimulation().tick();}
-		};
+//	private static final TimerTask TICK_TASK = new TimerTask()
+//		{
+//			@Override public void run() {Main.getFrame().tick();}
+//		};
 		
 	public RBMKSimulation(Canvas canvas)
 	{
 		super(canvas);
-		timer.schedule(TICK_TASK, TICK, TICK);
+//		timer.schedule(TICK_TASK, TICK, TICK);
 	}
 	
 	@Override
@@ -45,8 +42,8 @@ public class RBMKSimulation extends RBMKFrame
 		for (GridLocation loc : registeredLocations)
 			getColumnAtCoords(loc).tick();
 		super.tick();
-		if (!running)
-			timer.cancel();
+//		if (!running)
+//			timer.cancel();
 	}
 	
 	public void triggerMeltdown()
@@ -216,8 +213,8 @@ public class RBMKSimulation extends RBMKFrame
 	
 	public void setRunning(boolean running)
 	{
-		if (running && !isRunning())
-			timer.schedule(TICK_TASK, 50, 50);
+//		if (running && !isRunning())
+//			timer.schedule(TICK_TASK, 50, 50);
 		
 		this.running = running;
 	}
@@ -343,7 +340,7 @@ public class RBMKSimulation extends RBMKFrame
 	@Override
 	protected void finalize() throws Throwable
 	{
-		timer.cancel();
+//		timer.cancel();
 		running = false;
 	}
 

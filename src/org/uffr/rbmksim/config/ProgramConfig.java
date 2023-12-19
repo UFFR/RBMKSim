@@ -46,7 +46,7 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	public Path userPath = USER_PATH,// Default path for blueprints and simulations.
 				configPath = CONFIG_PATH;// Path where all configurations, including this one, are held.
 	public String username = USERNAME;// Name that is used to credit the creator of blueprints and simulations created.
-	public int tickDelay = TICK_DELAY;// Delay between MC ticks while the program runs, to slow down execution.
+	public int tickDelay = TICK_DELAY;// Additional delay between MC ticks while the program runs, to slow down execution.
 	
 	static
 	{
@@ -57,6 +57,7 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 		} catch (IOException e)
 		{
 			Main.openErrorDialog(e);
+			LOGGER.error("Unable to create configuration directories!", e);
 		}
 	}
 	

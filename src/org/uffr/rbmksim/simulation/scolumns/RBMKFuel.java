@@ -1,13 +1,10 @@
 package org.uffr.rbmksim.simulation.scolumns;
 
-import static org.uffr.rbmksim.main.Main.getSimulation;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.google.common.hash.PrimitiveSink;
 import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
 import org.uffr.rbmksim.main.dialog.FuelDialog;
@@ -18,6 +15,8 @@ import org.uffr.rbmksim.simulation.fuels.NeutronType;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelRod;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
+
+import com.google.common.hash.PrimitiveSink;
 
 import javafx.scene.canvas.GraphicsContext;
 
@@ -70,7 +69,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 			
 			if (heat > maxHeat())
 			{
-				((RBMKSimulation) getSimulation()).triggerMeltdown();
+				((RBMKSimulation) currentFrame).triggerMeltdown();
 				return;
 			}
 			
@@ -130,9 +129,9 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	
 	protected double runInteraction(GridLocation loc, double flux)
 	{
-		if (getSimulation().validCoords(loc))
+		if (getFrame().validCoords(loc))
 		{
-			final RBMKSimColumnBase columnBase = (RBMKSimColumnBase) getSimulation().getColumnAtCoords(loc);
+			final RBMKSimColumnBase columnBase = (RBMKSimColumnBase) getFrame().getColumnAtCoords(loc);
 			if (columnBase instanceof RBMKFuel)
 			{
 				final RBMKFuel fuel = (RBMKFuel) columnBase;
