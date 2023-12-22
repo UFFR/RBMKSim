@@ -17,6 +17,7 @@ import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintColumn;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.rbmksim.util.InfoProvider;
+import org.uffr.rbmksim.util.RBMKRenderHelper;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -31,12 +32,14 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 
 public class MainController implements Initializable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainController.class);
 	public static final Set<String> ALLOWED_PROPERTIES = ImmutableSet.of("text", "promptText", "tooltip", "accessibleText");
+	private static final double SCROLL_FACTOR = 40, DEFAULT_ZOOM = 0.25;
 	private Optional<RBMKFrame> currentFrame = Optional.empty();
 	@FXML
 	private TextArea infoTextArea;
@@ -80,9 +83,10 @@ public class MainController implements Initializable
 	public void initialize(URL url, ResourceBundle bundle)
 	{
 		LOGGER.debug("Initializing main window...");
+		LOGGER.trace("Setting up I18n for window...");
 		for (Field field : getClass().getDeclaredFields())
 		{
-			LOGGER.trace("Trying field [{}]", field);
+			LOGGER.trace("Trying field [{}]...", field);
 			try
 			{
 				if (Modifier.isStatic(field.getModifiers()))
@@ -113,6 +117,7 @@ public class MainController implements Initializable
 				}*/
 				
 //				final Object item = field.get(this);
+				LOGGER.trace("Accumulating field methods...");
 				final ArrayList<Method> setterMethods = new ArrayList<>();
 				for (Method method : item.getClass().getMethods())
 					if (method.getName().startsWith("set"))
@@ -120,15 +125,16 @@ public class MainController implements Initializable
 				
 				for (Method method : setterMethods)
 				{
-					LOGGER.trace("Trying method [{}]", method);
+					LOGGER.trace("Trying method [{}]...", method);
 					final String property = Character.toLowerCase(method.getName().charAt(3)) + method.getName().substring(4);
 					LOGGER.trace("Got assumed property [{}]", property);
 					if (!ALLOWED_PROPERTIES.contains(property))
 						continue;
 					final String unlocalized = "app." + field.getName() + '.' + property;
-					LOGGER.trace("Trying: [{}]", unlocalized);
+					LOGGER.trace("Checking if field has I18n entry...");
 					if (I18n.hasKey(unlocalized))
 					{
+						LOGGER.trace("Trying: [{}]...", unlocalized);
 						try
 						{
 							method.invoke(item, I18n.resolve(unlocalized));
@@ -144,6 +150,7 @@ public class MainController implements Initializable
 				LOGGER.error("Unable to retrieve field!", e);
 			}
 		}
+		LOGGER.trace("I18n complete");
 		
 		mainCanvas.heightProperty().bind(canvasPane.heightProperty());
 		mainCanvas.widthProperty().bind(canvasPane.widthProperty());
@@ -158,13 +165,13 @@ public class MainController implements Initializable
 	
 	private void onFrameChanged()
 	{
-		LOGGER.debug("MainController.onFrameChanged() triggered");
+		LOGGER.debug("onFrameChanged() triggered");
 		currentFrame = Main.getFrame();
 		nameTextField.setText(currentFrame.isPresent() ? currentFrame.get().getName() : "");
 		creatorTextField.setText(currentFrame.isPresent() ? currentFrame.get().getCreatorName() : "");
 		versionTextField.setText(currentFrame.isPresent() ? currentFrame.get().getVersion() : "");
 		dateInput.setValue(currentFrame.isPresent() ? currentFrame.get().getDate() : null);
-		
+		RBMKRenderHelper.renderBackground(mainCanvas.getGraphicsContext2D(), mainCanvas);
 		currentFrame.get().render();
 	}
 	
@@ -172,16 +179,16 @@ public class MainController implements Initializable
 	private void onClickNewBlueprint()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickNewBlueprint() triggered");
+		LOGGER.debug("onClickNewBlueprint() triggered");
 		
 		Main.setFrame(new RBMKBlueprint(mainCanvas));
 		
 		// TODO Remove
 		final RBMKFrame frame = Main.getFrame().get();
-		LOGGER.debug("Added col 1? {}", frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), frame, ColumnType.BLANK, false)));
-		LOGGER.debug("Added col 2? {}", frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), frame, ColumnType.BLANK, false)));
-		LOGGER.debug("Added col 3? {}", frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 0), frame, ColumnType.BLANK, false)));
-		LOGGER.debug("Added col 4? {}", frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 10), frame, ColumnType.BLANK, false)));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), frame, ColumnType.BLANK, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), frame, ColumnType.BLANK, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 0), frame, ColumnType.BLANK, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 10), frame, ColumnType.BLANK, false));
 		
 		onFrameChanged();
 	}
@@ -190,7 +197,7 @@ public class MainController implements Initializable
 	private void onClickNewSimulation()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickNewSimulation() triggered");
+		LOGGER.debug("onClickNewSimulation() triggered");
 		onFrameChanged();
 	}
 	
@@ -198,7 +205,7 @@ public class MainController implements Initializable
 	private void onClickOpen()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickOpen() triggered");
+		LOGGER.debug("onClickOpen() triggered");
 		onFrameChanged();
 	}
 	
@@ -206,7 +213,7 @@ public class MainController implements Initializable
 	private void onClickClose()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickClose() triggered");
+		LOGGER.debug("onClickClose() triggered");
 		Main.closeFrame();
 		currentFrame = Optional.empty();
 		onFrameChanged();
@@ -216,35 +223,35 @@ public class MainController implements Initializable
 	private void onClickSave()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickSave() triggered");
+		LOGGER.debug("onClickSave() triggered");
 	}
 	
 	@FXML
 	private void onClickSaveAs()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickSaveAs() triggered");
+		LOGGER.debug("onClickSaveAs() triggered");
 	}
 	
 	@FXML
 	private void onClickRevert()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickRevert() triggered");
+		LOGGER.debug("onClickRevert() triggered");
 	}
 	
 	@FXML
 	private void onClickPreferences()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickPreferences() triggered");
+		LOGGER.debug("onClickPreferences() triggered");
 	}
 	
 	@SuppressWarnings("static-method")
 	@FXML
 	private void onClickAbout()
 	{
-		LOGGER.debug("MainController.onClickAbout() triggered");
+		LOGGER.debug("onClickAbout() triggered");
 		Main.openDialog(I18n.resolve("app.title.about"), I18n.resolve("app.title"), Main.getAboutString(), AlertType.INFORMATION);
 	}
 	
@@ -252,7 +259,7 @@ public class MainController implements Initializable
 	@FXML
 	private void onClickCredits()
 	{
-		LOGGER.debug("MainController.onClickCredits() triggered");
+		LOGGER.debug("onClickCredits() triggered");
 		Main.openDialog(I18n.resolve("app.title.credits"), I18n.resolve("app.header.credits"), Main.getCreditsString(), AlertType.INFORMATION);
 	}
 	
@@ -260,21 +267,67 @@ public class MainController implements Initializable
 	private void onClickHelp()
 	{
 		// TODO Auto-generated method stub
-		LOGGER.debug("MainController.onClickHelp() triggered");
+		LOGGER.debug("onClickHelp() triggered");
 	}
 	
 	@SuppressWarnings("static-method")
 	@FXML
 	private void onClickQuit()
 	{
-		LOGGER.debug("MainController.onClickQuit() triggered");
+		LOGGER.debug("onClickQuit() triggered");
 		LOGGER.info("Exiting...");
 		Platform.exit();
+	}
+	
+	private void tryZoom(double amount)
+	{
+		if (currentFrame.isPresent())
+		{
+			LOGGER.trace("Changing frame render zoom level by: {}", amount);
+			currentFrame.get().zoom += amount;
+			currentFrame.get().render();
+		}
+	}
+	
+	@FXML
+	private void onClickZoomIn()
+	{
+		LOGGER.trace("onClickZoomIn() triggered");
+		tryZoom(DEFAULT_ZOOM);
+	}
+	
+	@FXML
+	private void onClickZoomOut()
+	{
+		LOGGER.trace("onClickZoomOut() triggered");
+		tryZoom(-DEFAULT_ZOOM);
+	}
+	
+	@FXML
+	private void onClickZoomReset()
+	{
+		LOGGER.trace("onClickZoomReset() triggered");
+		if (currentFrame.isPresent())
+		{
+			currentFrame.get().zoom = 1;
+			currentFrame.get().render();
+		}
+	}
+	
+	@FXML
+	private void onCanvasScroll(ScrollEvent event)
+	{
+		LOGGER.trace("onCanvasScroll(ScrollEvent) triggered");
+		if (event.isControlDown())
+			tryZoom((event.getDeltaY() / SCROLL_FACTOR) * DEFAULT_ZOOM);
+		
+		// TODO Regular scrolling
 	}
 	
 	@FXML
 	private void onNameTextFieldTextChanged()
 	{
+		LOGGER.trace("onNameTextFieldTextChanged() triggered");
 		if (currentFrame.isPresent())
 			currentFrame.get().setName(nameTextField.getText());
 	}
@@ -282,6 +335,7 @@ public class MainController implements Initializable
 	@FXML
 	private void onCreatorNameTextChanged()
 	{
+		LOGGER.trace("onCreatorNameTextChanged() triggered");
 		if (currentFrame.isPresent())
 			currentFrame.get().setCreatorName(creatorTextField.getText());
 	}
@@ -289,6 +343,7 @@ public class MainController implements Initializable
 	@FXML
 	private void onVersionTextChanged()
 	{
+		LOGGER.trace("onVersionTextChanged() triggered");
 		if (currentFrame.isPresent())
 			currentFrame.get().setVersion(versionTextField.getText());
 	}
@@ -296,6 +351,7 @@ public class MainController implements Initializable
 	@FXML
 	private void onChangeDateInput()
 	{
+		LOGGER.trace("onChangeDateInput() triggered");
 		if (currentFrame.isPresent())
 			currentFrame.get().setDate(dateInput.getValue());
 	}

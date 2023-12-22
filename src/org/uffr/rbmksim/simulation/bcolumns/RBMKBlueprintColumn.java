@@ -25,7 +25,7 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	private final boolean moderated;
 	public RBMKBlueprintColumn(RBMKSimColumnBase columnBase)
 	{
-		super(columnBase.getLocation(), columnBase.getRbmkFrame());
+		super(columnBase.getLocation(), getCurrentFrame());
 		columnType = columnBase.getColumnType();
 		moderated = columnBase.isModerated();
 	}
@@ -52,7 +52,7 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	@Override
 	public void render(GraphicsContext graphics)
 	{
-		RBMKRenderHelper.genericRender(columnType, location, graphics);
+		RBMKRenderHelper.genericRender(columnType, location, graphics, getCurrentFrame().zoom);
 	}
 	
 	@Override

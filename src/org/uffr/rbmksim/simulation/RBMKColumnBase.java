@@ -20,7 +20,7 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 {
 	private static final long serialVersionUID = -4281135799096443502L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKColumnBase.class);
-	protected static RBMKFrame currentFrame;
+	private static RBMKFrame currentFrame;
 	public static final short MAX_WATER = 16000, MAX_STEAM = 16000, MAX_HEAT_DEFAULT = 1500;
 	
 	@Deprecated
@@ -44,6 +44,11 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 		this(location, column.rbmkFrame);
 		LOGGER.trace("RBMKColumnBase copy constructor called");
 	}
+	
+	public static void setCurrentFrame(RBMKFrame currentFrame)
+	{
+		RBMKColumnBase.currentFrame = currentFrame;
+	}
 
 	public abstract ColumnType getColumnType();
 	public abstract boolean isModerated();
@@ -56,14 +61,9 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 		this.rbmkFrame = rbmkFrame;
 	}
 	
-	public RBMKFrame getRbmkFrame()
+	protected static SimulationConfig getConfig()
 	{
-		return rbmkFrame;
-	}
-	
-	protected final SimulationConfig getConfig()
-	{
-		return rbmkFrame.getConfig();
+		return currentFrame.getConfig();
 	}
 	
 	public final GridLocation getLocation()
@@ -106,13 +106,13 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 		final RBMKColumnBase other = (RBMKColumnBase) obj;
 		return Objects.equals(location, other.location) && shouldRender == other.shouldRender;
 	}
-	
-	@Override
-	public abstract String toString();
 
-	protected static RBMKFrame getFrame()
+	protected static RBMKFrame getCurrentFrame()
 	{
 		return currentFrame == null ? currentFrame = Main.getFrame().get() : currentFrame;
 	}
+	
+	@Override
+	public abstract String toString();
 	
 }

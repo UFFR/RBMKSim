@@ -129,6 +129,25 @@
                      </accelerator></MenuItem>
           </items>
         </Menu>
+            <Menu mnemonicParsing="false" text="View">
+              <items>
+                  <MenuItem mnemonicParsing="false" onAction="#onClickZoomIn" text="Zoom In">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="PLUS" control="DOWN" meta="UP" shift="ANY" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#onClickZoomOut" text="Zoom Out">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="MINUS" control="DOWN" meta="UP" shift="ANY" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
+                <MenuItem mnemonicParsing="false" onAction="#onClickZoomReset" text="Reset Zoom">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="DIGIT0" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
+              </items>
+            </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
                   <MenuItem mnemonicParsing="false" onAction="#onClickHelp" text="Help">
@@ -165,7 +184,7 @@
                                        <children>
                                           <Pane fx:id="canvasPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <children>
-                                                <Canvas fx:id="mainCanvas" height="400.0" width="400.0">
+                                                <Canvas fx:id="mainCanvas" height="400.0" onScroll="#onCanvasScroll" width="400.0">
                                                    <cursor>
                                                       <Cursor fx:constant="CROSSHAIR" />
                                                    </cursor>

@@ -45,12 +45,12 @@ public abstract class RBMKControl extends RBMKSimColumnBase
 	{
 		if (level > targetLevel)
 		{
-			level -= SPEED * rbmkFrame.getConfig().controlSpeedMod;
+			level -= SPEED * getCurrentFrame().getConfig().controlSpeedMod;
 			if (level < targetLevel) level = targetLevel;
 		}
 		if (level < targetLevel)
 		{
-			level += SPEED * rbmkFrame.getConfig().controlSpeedMod;
+			level += SPEED * getCurrentFrame().getConfig().controlSpeedMod;
 			if (level > targetLevel) level = targetLevel;
 		}
 		super.tick();

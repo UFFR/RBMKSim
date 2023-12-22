@@ -52,7 +52,7 @@ public class RBMKBlank extends RBMKSimColumnBase
 		final StringBuilder builder = new StringBuilder();
 		builder.append("RBMKBlank [heat=").append(heat).append(", water=").append(water).append(", steam=")
 				.append(steam).append(", heatCache=").append(Arrays.toString(heatCache)).append(", location=")
-				.append(location).append(", simulation=").append(rbmkFrame).append(']');
+				.append(location).append(']');
 		return builder.toString();
 	}
 

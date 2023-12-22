@@ -42,7 +42,7 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 	@Override
 	public void render(GraphicsContext graphics)
 	{
-		RBMKRenderHelper.genericRender(getColumnType(), location, graphics);
+		RBMKRenderHelper.genericRender(getColumnType(), location, graphics, getCurrentFrame().zoom);
 	}
 	
 	@Override
@@ -82,7 +82,7 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 		for (Direction dir : Direction.values())
 		{
 			if (heatCache[index] == null)
-				heatCache[index] = (RBMKSimColumnBase) rbmkFrame.getColumnAtCoords(dir.getNeighbor(location));
+				heatCache[index] = (RBMKSimColumnBase) getCurrentFrame().getColumnAtCoords(dir.getNeighbor(location));
 			index++;
 		}
 		

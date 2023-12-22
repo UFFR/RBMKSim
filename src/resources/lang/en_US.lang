@@ -22,9 +22,6 @@ app.title=NTM RBMK Blueprint Designer & Simulator
 app.title.about=About
 app.title.credits=Credits
 
-dialog.error.title=Error!
-dialog.error.header=Caught exception while running!
-
 column.blank=RBMK Structural Column
 column.fuel=RBMK Fuel Column
 column.boiler=RBMK Boiler
@@ -57,6 +54,9 @@ config.simulation.reasimRange=ReaSim range
 config.simulation.surgeMod=Reactivity surge modifier
 
 credits.java=#java on Libera.chat
+
+dialog.error.title=Error!
+dialog.error.header=Caught exception while running! Report full stack trace in log to developer!
 
 fuel.category.real=Real/Realistic Fuels
 fuel.category.futuristic=Futuristic Fuels

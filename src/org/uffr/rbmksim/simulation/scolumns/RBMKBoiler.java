@@ -42,12 +42,12 @@ public class RBMKBoiler extends RBMKSimColumnBase
 		final double heatProvided = heat - steamTank.getFluidType().temperature;
 		if (heatProvided > 0)
 		{
-			final int waterUsed = Math.min((int) Math.floor(heatProvided / rbmkFrame.getConfig().boilerHeatConsumption), steamTank.getFill());
+			final int waterUsed = Math.min((int) Math.floor(heatProvided / getCurrentFrame().getConfig().boilerHeatConsumption), steamTank.getFill());
 			waterTank.decrementFill(waterUsed);
 			final int steamProduced = (int) Math.floor(waterUsed * 100 / getFactorFromSteam(steamTank.getFluidType()));
 			steamTank.incrementFill(steamProduced);
 			
-			heat -= waterUsed * rbmkFrame.getConfig().boilerHeatConsumption;
+			heat -= waterUsed * getCurrentFrame().getConfig().boilerHeatConsumption;
 		}
 		super.tick();
 	}
@@ -206,8 +206,8 @@ public class RBMKBoiler extends RBMKSimColumnBase
 		final StringBuilder builder = new StringBuilder();
 		builder.append("RBMKBoiler [heat=").append(heat).append(", water=").append(water).append(", steam=")
 				.append(steam).append(", heatCache=").append(Arrays.toString(heatCache)).append(", location=")
-				.append(location).append(", simulation=").append(rbmkFrame).append(", waterTank=").append(waterTank)
-				.append(", steamTank=").append(steamTank).append(']');
+				.append(location).append(", waterTank=").append(waterTank).append(", steamTank=")
+				.append(steamTank).append(']');
 		return builder.toString();
 	}
 }

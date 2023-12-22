@@ -26,7 +26,7 @@ public class RBMKRenderHelper
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKRenderHelper.class);
 	// Render size for cells.
 	public static final byte CELL_SIZE = 20, LINE_WIDTH = 4;
-	public static final Color BACKGROUND_COLOR = Color.LIGHTGREY;
+	public static final Color CELL_COLOR = Color.LIGHTGREY, BACKGROUND_COLOR = Color.BLACK.brighter();
 	private final Canvas canvas;
 	private final GraphicsContext graphics;
 	private final Queue<Consumer<GraphicsContext>> renderQueue = new ArrayDeque<>();
@@ -56,18 +56,19 @@ public class RBMKRenderHelper
 		
 		reset();
 	}
-	
+
 	public void reset()
 	{
 		LOGGER.debug("Current rendering reset");
-		graphics.setFill(BACKGROUND_COLOR);
-		graphics.rect(0, 0, canvas.getWidth(), canvas.getHeight());
+		graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		graphics.fill();
 	}
 	
 	public void flush()
 	{
 		LOGGER.debug("Flushing render queue");
+		reset();
+		renderBackground(graphics, canvas);
 		while (!renderQueue.isEmpty())
 			renderQueue.poll().accept(graphics);
 	}
@@ -125,10 +126,10 @@ public class RBMKRenderHelper
 		Images.convertInternalToPng(rawSeq, path);
 	}
 	
-	public static void genericRender(ColumnType type, GridLocation location, GraphicsContext graphics)
+	public static void genericRender(ColumnType type, GridLocation location, GraphicsContext graphics, double zoom)
 	{
 		LOGGER.debug("Generic render handler requested for type {} at {}", type, location);
-		renderBackground(location, graphics);
+		renderCell(location, graphics, zoom);
 		graphics.setLineWidth(LINE_WIDTH);
 		switch (type)
 		{
@@ -190,21 +191,28 @@ public class RBMKRenderHelper
 			case BLANK:
 			default: break;
 		}
-		renderEdges(location, graphics);
+		renderEdges(location, graphics, zoom);
 	}
 	
-	public static void renderBackground(GridLocation location, GraphicsContext graphics)
+	public static void renderBackground(GraphicsContext graphics, Canvas canvas)
 	{
-		LOGGER.trace("Rendering background...");
+		LOGGER.trace("Filling background...");
+		graphics.setFill(BACKGROUND_COLOR);
+		graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+	}
+	
+	public static void renderCell(GridLocation location, GraphicsContext graphics, double zoom)
+	{
+		LOGGER.trace("Rendering cell background...");
 		graphics.setFill(Color.GRAY);
-		graphics.fillRect(location.getX() * CELL_SIZE, location.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+		graphics.fillRect(location.getX() * CELL_SIZE * zoom, location.getY() * CELL_SIZE * zoom, CELL_SIZE * zoom, CELL_SIZE * zoom);
 	}
 	
-	public static void renderEdges(GridLocation location, GraphicsContext graphics)
+	public static void renderEdges(GridLocation location, GraphicsContext graphics, double zoom)
 	{
-		LOGGER.trace("Rendering edges...");
+		LOGGER.trace("Rendering cell edges...");
 		graphics.setLineWidth(LINE_WIDTH);
 		graphics.setFill(Color.BLACK);
-		graphics.rect(location.getX() * CELL_SIZE, location.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+		graphics.rect(location.getX() * CELL_SIZE * zoom, location.getY() * CELL_SIZE * zoom, CELL_SIZE * zoom, CELL_SIZE * zoom);
 	}
 }

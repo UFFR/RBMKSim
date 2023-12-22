@@ -62,6 +62,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	// Some quick tracking values, a timer for delays, and a tick counter.
 	protected int rows = DEFAULT_SIZE, columns = DEFAULT_SIZE, ticks;
 	protected transient int graphTimer;
+	public transient double zoom = 1;
 	
 	public RBMKFrame(Canvas canvas)
 	{

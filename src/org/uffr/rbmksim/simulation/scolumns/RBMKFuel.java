@@ -69,7 +69,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 			
 			if (heat > maxHeat())
 			{
-				((RBMKSimulation) currentFrame).triggerMeltdown();
+				((RBMKSimulation) getCurrentFrame()).triggerMeltdown();
 				return;
 			}
 			
@@ -129,9 +129,9 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	
 	protected double runInteraction(GridLocation loc, double flux)
 	{
-		if (getFrame().validCoords(loc))
+		if (getCurrentFrame().validCoords(loc))
 		{
-			final RBMKSimColumnBase columnBase = (RBMKSimColumnBase) getFrame().getColumnAtCoords(loc);
+			final RBMKSimColumnBase columnBase = (RBMKSimColumnBase) getCurrentFrame().getColumnAtCoords(loc);
 			if (columnBase instanceof RBMKFuel)
 			{
 				final RBMKFuel fuel = (RBMKFuel) columnBase;
@@ -196,7 +196,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	@Override
 	public void render(GraphicsContext context)
 	{
-		RBMKRenderHelper.genericRender(getColumnType(), location, context);
+		RBMKRenderHelper.genericRender(getColumnType(), location, context, getCurrentFrame().zoom);
 	}
 	
 	@Override
@@ -247,9 +247,8 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 		final StringBuilder builder = new StringBuilder();
 		builder.append("RBMKFuel [heat=").append(heat).append(", water=").append(water).append(", steam=").append(steam)
 				.append(", heatCache=").append(Arrays.toString(heatCache)).append(", location=").append(location)
-				.append(", simulation=").append(rbmkFrame).append(", moderated=").append(moderated)
-				.append(", fuelRod=").append(fuelRod).append(", fluxFast=").append(fluxFast).append(", fluxSlow=")
-				.append(fluxSlow).append(']');
+				.append(", moderated=").append(moderated).append(", fuelRod=").append(fuelRod).append(", fluxFast=")
+				.append(fluxFast).append(", fluxSlow=").append(fluxSlow).append(']');
 		return builder.toString();
 	}
 
