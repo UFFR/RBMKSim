@@ -115,7 +115,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 * @return The other type.
 	 */
 	public abstract RBMKFrame convertType();
-	public abstract void convertColumns();
+	protected abstract void convertColumns();
 	/**
 	 * Render the design to an exportable image.
 	 * @return A raw image.

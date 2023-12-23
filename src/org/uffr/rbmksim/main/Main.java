@@ -99,6 +99,7 @@ public class Main extends Application
 	public static void closeFrame()
 	{
 		runner.close();
+		setFrame(null);
 	}
 	
 	public static Version getVersion()

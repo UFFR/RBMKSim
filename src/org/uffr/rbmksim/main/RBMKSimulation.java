@@ -176,7 +176,7 @@ public class RBMKSimulation extends RBMKFrame
 	}
 	
 	@Override
-	public void convertColumns()
+	protected void convertColumns()
 	{
 		// TODO Auto-generated method stub
 		for (int i = 0, matrixSize = grid.totalCells(); i < matrixSize; i++)

@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -28,35 +27,41 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.Pane;
 
 public class MainController implements Initializable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainController.class);
 	public static final Set<String> ALLOWED_PROPERTIES = ImmutableSet.of("text", "promptText", "tooltip", "accessibleText");
-	private static final double SCROLL_FACTOR = 40, DEFAULT_ZOOM = 0.25;
-	private Optional<RBMKFrame> currentFrame = Optional.empty();
+	private static final double SCROLL_FACTOR = 40, DEFAULT_ZOOM = 0.25, MAX_ZOOM = 3, MIN_ZOOM = 0.25;
+	private RBMKFrame currentFrame = null;
 	@FXML
 	private TextArea infoTextArea;
 	@FXML
-	private TextField nameTextField, creatorTextField, versionTextField;
+	private TextField nameTextField, creatorTextField, versionTextField, zoomTextField;
 	@FXML
 	private DatePicker dateInput;
 	@FXML
 	private Tab mainViewTab, graphsTab, costEstimatorTab;
 	@FXML
-	private TitledPane frameInfoPane, frameOptionsPane, columnOptionsPane;
+	private TitledPane frameInfoPane, frameOptionsPane, columnOptionsPane, controlOptionsPane;
 	@FXML
 	private ChoiceBox<GraphType> graphSelectionBox;
 	@FXML
 	private Pane canvasPane;
 	@FXML
 	private Canvas mainCanvas;
+	@FXML
+	private Label nameLabel, creatorLabel, versionLabel, dateLabel, zoomLabel;
 	
 	private enum GraphType
 	{
@@ -131,7 +136,7 @@ public class MainController implements Initializable
 					if (!ALLOWED_PROPERTIES.contains(property))
 						continue;
 					final String unlocalized = "app." + field.getName() + '.' + property;
-					LOGGER.trace("Checking if field has I18n entry...");
+					LOGGER.trace("Checking if [{}] has I18n entry...", unlocalized);
 					if (I18n.hasKey(unlocalized))
 					{
 						LOGGER.trace("Trying: [{}]...", unlocalized);
@@ -166,13 +171,22 @@ public class MainController implements Initializable
 	private void onFrameChanged()
 	{
 		LOGGER.debug("onFrameChanged() triggered");
-		currentFrame = Main.getFrame();
-		nameTextField.setText(currentFrame.isPresent() ? currentFrame.get().getName() : "");
-		creatorTextField.setText(currentFrame.isPresent() ? currentFrame.get().getCreatorName() : "");
-		versionTextField.setText(currentFrame.isPresent() ? currentFrame.get().getVersion() : "");
-		dateInput.setValue(currentFrame.isPresent() ? currentFrame.get().getDate() : null);
+		currentFrame = Main.getFrame().orElse(null);
 		RBMKRenderHelper.renderBackground(mainCanvas.getGraphicsContext2D(), mainCanvas);
-		currentFrame.get().render();
+		if (currentFrame == null)
+		{
+			nameTextField.setText("");
+			creatorTextField.setText("");
+			versionTextField.setText("");
+			dateInput.setValue(null);
+		} else
+		{
+			nameTextField.setText(currentFrame.getName());
+			creatorTextField.setText(currentFrame.getCreatorName());
+			versionTextField.setText(currentFrame.getVersion());
+			dateInput.setValue(currentFrame.getDate());
+			currentFrame.render();
+		}
 	}
 	
 	@FXML
@@ -215,7 +229,6 @@ public class MainController implements Initializable
 		// TODO Auto-generated method stub
 		LOGGER.debug("onClickClose() triggered");
 		Main.closeFrame();
-		currentFrame = Optional.empty();
 		onFrameChanged();
 	}
 	
@@ -281,11 +294,26 @@ public class MainController implements Initializable
 	
 	private void tryZoom(double amount)
 	{
-		if (currentFrame.isPresent())
+		LOGGER.trace("tryZoom(double) triggered");
+		if (currentFrame != null)
 		{
 			LOGGER.trace("Changing frame render zoom level by: {}", amount);
-			currentFrame.get().zoom += amount;
-			currentFrame.get().render();
+			currentFrame.zoom += amount;
+			currentFrame.zoom = clampZoom(currentFrame.zoom);
+			zoomTextField.setText(String.valueOf(currentFrame.zoom * 100));
+			currentFrame.render();
+		}
+	}
+	
+	private void trySetZoom(double amount)
+	{
+		LOGGER.trace("trySetZoom(double) triggered");
+		if (currentFrame != null)
+		{
+			LOGGER.trace("Changing frame render zoom level to: {}", amount);
+			currentFrame.zoom = clampZoom(amount);
+			zoomTextField.setText(String.valueOf(currentFrame.zoom * 100));
+			currentFrame.render();
 		}
 	}
 	
@@ -307,11 +335,8 @@ public class MainController implements Initializable
 	private void onClickZoomReset()
 	{
 		LOGGER.trace("onClickZoomReset() triggered");
-		if (currentFrame.isPresent())
-		{
-			currentFrame.get().zoom = 1;
-			currentFrame.get().render();
-		}
+		if (currentFrame != null)
+			trySetZoom(1);
 	}
 	
 	@FXML
@@ -325,41 +350,74 @@ public class MainController implements Initializable
 	}
 	
 	@FXML
-	private void onNameTextFieldTextChanged()
+	private void onCanvasZoom(ZoomEvent event)
+	{
+		LOGGER.trace("onCanvasZoom(ZoomEvent) triggered");
+		tryZoom(event.getZoomFactor() - 1);
+	}
+	
+	@FXML
+	private void onNameTextFieldTextChanged(KeyEvent event)
 	{
 		LOGGER.trace("onNameTextFieldTextChanged() triggered");
-		if (currentFrame.isPresent())
-			currentFrame.get().setName(nameTextField.getText());
+		if (currentFrame != null && event.getCode() == KeyCode.ENTER)
+			currentFrame.setName(nameTextField.getText());
 	}
 	
 	@FXML
-	private void onCreatorNameTextChanged()
+	private void onCreatorNameTextChanged(KeyEvent event)
 	{
 		LOGGER.trace("onCreatorNameTextChanged() triggered");
-		if (currentFrame.isPresent())
-			currentFrame.get().setCreatorName(creatorTextField.getText());
+		if (currentFrame != null && event.getCode() == KeyCode.ENTER)
+			currentFrame.setCreatorName(creatorTextField.getText());
 	}
 	
 	@FXML
-	private void onVersionTextChanged()
+	private void onVersionTextChanged(KeyEvent event)
 	{
 		LOGGER.trace("onVersionTextChanged() triggered");
-		if (currentFrame.isPresent())
-			currentFrame.get().setVersion(versionTextField.getText());
+		if (currentFrame != null && event.getCode() == KeyCode.ENTER)
+			currentFrame.setVersion(versionTextField.getText());
 	}
 	
 	@FXML
 	private void onChangeDateInput()
 	{
 		LOGGER.trace("onChangeDateInput() triggered");
-		if (currentFrame.isPresent())
-			currentFrame.get().setDate(dateInput.getValue());
+		if (currentFrame != null)
+			currentFrame.setDate(dateInput.getValue());
+	}
+	
+	@FXML
+	private void onZoomLevelTextChanged(KeyEvent event)
+	{
+		LOGGER.trace("onZoomLevelTextChanged() triggered with code: {}", event.getCode());
+		if (currentFrame != null && event.getCode() == KeyCode.ENTER)
+		{
+			double newZoom = currentFrame.zoom;
+			try
+			{
+				LOGGER.trace("Attempting to parse double...");
+				newZoom = clampZoom(Double.parseDouble(zoomTextField.getText()) / 100);
+				trySetZoom(newZoom);
+			} catch (NumberFormatException e)
+			{
+				LOGGER.warn("Caught exception with message: \"{}\" trying to parse double", e.getMessage());
+				zoomTextField.setText(String.valueOf(currentFrame.zoom * 100));
+			}
+		}
 	}
 	
 	public void setInfoArea(InfoProvider infoProvider)
 	{
 		LOGGER.debug("Set infoTextArea with data provided by InfoProvider instance");
 		infoTextArea.setText(infoProvider.asProperString());
+	}
+	
+	private static double clampZoom(double amount)
+	{
+		LOGGER.trace("Clamping zoom amount...");
+		return amount > MAX_ZOOM ? MAX_ZOOM : amount < MIN_ZOOM ? MIN_ZOOM : amount;
 	}
 	
 }
