@@ -200,7 +200,7 @@ public class MainController implements Initializable
 		Main.setFrame(new RBMKBlueprint(mainCanvas));
 		
 		// TODO Remove
-		final ColumnType testType = ColumnType.STORAGE;
+		final ColumnType testType = ColumnType.BLANK;
 		final RBMKFrame frame = Main.getFrame().get();
 		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), frame, testType, false));
 		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), frame, testType, false));

@@ -57,7 +57,7 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 	
 	public void render(GraphicsContext graphics)
 	{
-		LOGGER.trace("Column rendering called; self-type: {}", getColumnType());
+		LOGGER.trace("Column rendering requested; self-type: {}", getColumnType());
 		RBMKRenderHelper.renderEdges(location, graphics, getRendererZoom());
 		RBMKRenderHelper.renderCell(location, graphics, getRendererZoom());
 	}

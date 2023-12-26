@@ -296,7 +296,7 @@ public class RBMKRenderHelper
 	{
 		graphics.setLineWidth(LINE_WIDTH * 2);
 		graphics.setStroke(Color.WHITE);
-		graphics.rect(
+		graphics.strokeRect(
 				location.getX() * CELL_SIZE * zoom,
 				location.getY() * CELL_SIZE * zoom,
 				CELL_SIZE * zoom,
