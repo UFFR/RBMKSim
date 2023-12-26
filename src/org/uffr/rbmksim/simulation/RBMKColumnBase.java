@@ -10,6 +10,7 @@ import org.uffr.rbmksim.config.SimulationConfig;
 import org.uffr.rbmksim.main.Main;
 import org.uffr.rbmksim.main.RBMKFrame;
 import org.uffr.rbmksim.util.InfoProvider;
+import org.uffr.rbmksim.util.RBMKRenderHelper;
 import org.uffr.uffrlib.hashing.Hashable;
 
 import com.google.common.hash.PrimitiveSink;
@@ -53,7 +54,13 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 	public abstract ColumnType getColumnType();
 	public abstract boolean isModerated();
 	public abstract void reset();
-	public abstract void render(GraphicsContext graphics);
+	
+	public void render(GraphicsContext graphics)
+	{
+		LOGGER.trace("Column rendering called; self-type: {}", getColumnType());
+		RBMKRenderHelper.renderEdges(location, graphics, getRendererZoom());
+		RBMKRenderHelper.renderCell(location, graphics, getRendererZoom());
+	}
 	
 	public void setRbmkFrame(RBMKFrame rbmkFrame)
 	{
@@ -64,6 +71,11 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 	protected static SimulationConfig getConfig()
 	{
 		return currentFrame.getConfig();
+	}
+	
+	protected static double getRendererZoom()
+	{
+		return currentFrame.getRenderer().zoom;
 	}
 	
 	public final GridLocation getLocation()

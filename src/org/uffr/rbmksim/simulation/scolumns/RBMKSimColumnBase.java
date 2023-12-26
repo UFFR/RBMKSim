@@ -42,7 +42,7 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 	@Override
 	public void render(GraphicsContext graphics)
 	{
-		RBMKRenderHelper.genericRender(getColumnType(), location, graphics, getCurrentFrame().zoom);
+		RBMKRenderHelper.genericRender(getColumnType(), location, graphics, getCurrentFrame().getRenderer().zoom);
 	}
 	
 	@Override

@@ -52,7 +52,7 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	@Override
 	public void render(GraphicsContext graphics)
 	{
-		RBMKRenderHelper.genericRender(columnType, location, graphics, getCurrentFrame().zoom);
+		RBMKRenderHelper.genericRender(columnType, location, graphics, getCurrentFrame().getRenderer().zoom);
 	}
 	
 	@Override

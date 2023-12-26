@@ -196,7 +196,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	@Override
 	public void render(GraphicsContext context)
 	{
-		RBMKRenderHelper.genericRender(getColumnType(), location, context, getCurrentFrame().zoom);
+		RBMKRenderHelper.genericRender(getColumnType(), location, context, getCurrentFrame().getRenderer().zoom);
 	}
 	
 	@Override

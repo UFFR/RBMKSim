@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	// Some quick tracking values, a timer for delays, and a tick counter.
 	protected int rows = DEFAULT_SIZE, columns = DEFAULT_SIZE, ticks;
 	protected transient int graphTimer;
-	public transient double zoom = 1;
+	protected transient Optional<GridLocation> selectedLocation = Optional.empty();
 	
 	public RBMKFrame(Canvas canvas)
 	{
@@ -73,7 +74,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		grid = new ExpandingArrayMatrix<>(DEFAULT_SIZE, DEFAULT_SIZE);
 		registeredLocations = new HashSet<>(DEFAULT_SIZE * DEFAULT_SIZE);
 		date = LocalDate.now();
-		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D());
+		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.totalCells());
 		
 		// Defaults
 		name = "Untitled" + creationCount++;
@@ -101,7 +102,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		this.date = frame.date;
 		// Probably shouldn't copy ticks if it's a new frame
 		
-		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D());
+		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.totalCells());
 	}
 	
 	/**
@@ -126,11 +127,11 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 * The render helper associated with this frame.
 	 * @return A render helper class.
 	 */
-	protected RBMKRenderHelper getRenderer()
+	public RBMKRenderHelper getRenderer()
 	{
 		LOGGER.trace("RBMKFrame.getRenderer() called...");
 		// In case it was deserialized
-		return renderer == null ? renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D()) : renderer;
+		return renderer == null ? renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.totalCells()) : renderer;
 	}
 	
 	/**
@@ -440,6 +441,21 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	public Set<GridLocation> getRegisteredLocations()
 	{
 		return ImmutableSet.copyOf(registeredLocations);
+	}
+	
+	public Optional<GridLocation> getSelectedLocation()
+	{
+		return selectedLocation;
+	}
+	
+	public void setSelectedLocation(Optional<GridLocation> selectedLocation)
+	{
+		if (this.selectedLocation.equals(selectedLocation))
+			this.selectedLocation = Optional.empty();
+		else
+			this.selectedLocation = selectedLocation;
+		
+		renderer.selectedLocation = this.selectedLocation;
 	}
 	
 	@Override

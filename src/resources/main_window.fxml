@@ -184,7 +184,7 @@
                                        <children>
                                           <Pane fx:id="canvasPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <children>
-                                                <Canvas fx:id="mainCanvas" height="400.0" onScroll="#onCanvasScroll" onZoom="#onCanvasZoom" width="400.0">
+                                                <Canvas fx:id="mainCanvas" height="400.0" onMouseClicked="#onCanvasClicked" onScroll="#onCanvasScroll" onZoom="#onCanvasZoom" width="400.0">
                                                    <cursor>
                                                       <Cursor fx:constant="CROSSHAIR" />
                                                    </cursor>

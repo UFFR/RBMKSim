@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -34,6 +35,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.Pane;
@@ -42,7 +44,7 @@ public class MainController implements Initializable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainController.class);
 	public static final Set<String> ALLOWED_PROPERTIES = ImmutableSet.of("text", "promptText", "tooltip", "accessibleText");
-	private static final double SCROLL_FACTOR = 40, DEFAULT_ZOOM = 0.25, MAX_ZOOM = 3, MIN_ZOOM = 0.25;
+	private static final double SCROLL_FACTOR = 40, DEFAULT_ZOOM = 0.25, MAX_ZOOM = 5, MIN_ZOOM = 0.25;
 	private RBMKFrame currentFrame = null;
 	@FXML
 	private TextArea infoTextArea;
@@ -198,11 +200,12 @@ public class MainController implements Initializable
 		Main.setFrame(new RBMKBlueprint(mainCanvas));
 		
 		// TODO Remove
+		final ColumnType testType = ColumnType.STORAGE;
 		final RBMKFrame frame = Main.getFrame().get();
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), frame, ColumnType.BLANK, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), frame, ColumnType.BLANK, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 0), frame, ColumnType.BLANK, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 10), frame, ColumnType.BLANK, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), frame, testType, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), frame, testType, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 0), frame, testType, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 10), frame, testType, false));
 		
 		onFrameChanged();
 	}
@@ -298,9 +301,9 @@ public class MainController implements Initializable
 		if (currentFrame != null)
 		{
 			LOGGER.trace("Changing frame render zoom level by: {}", amount);
-			currentFrame.zoom += amount;
-			currentFrame.zoom = clampZoom(currentFrame.zoom);
-			zoomTextField.setText(String.valueOf(currentFrame.zoom * 100));
+			currentFrame.renderer.zoom += amount;
+			currentFrame.renderer.zoom = clampZoom(currentFrame.renderer.zoom);
+			zoomTextField.setText(String.valueOf(currentFrame.renderer.zoom * 100));
 			currentFrame.render();
 		}
 	}
@@ -311,8 +314,8 @@ public class MainController implements Initializable
 		if (currentFrame != null)
 		{
 			LOGGER.trace("Changing frame render zoom level to: {}", amount);
-			currentFrame.zoom = clampZoom(amount);
-			zoomTextField.setText(String.valueOf(currentFrame.zoom * 100));
+			currentFrame.renderer.zoom = clampZoom(amount);
+			zoomTextField.setText(String.valueOf(currentFrame.renderer.zoom * 100));
 			currentFrame.render();
 		}
 	}
@@ -340,9 +343,21 @@ public class MainController implements Initializable
 	}
 	
 	@FXML
+	private void onCanvasClicked(MouseEvent event)
+	{
+		LOGGER.trace("onCanvasClicked(MouseEvent) triggered at coordinate [x={}, y={}] using button {}", event.getX(), event.getY(), event.getButton());
+		final int x = (int) event.getX() / RBMKRenderHelper.CELL_SIZE, y = (int) event.getY() / RBMKRenderHelper.CELL_SIZE;
+		if (currentFrame != null)
+		{
+			currentFrame.setSelectedLocation(Optional.of(new GridLocation(x, y)));
+			currentFrame.render();
+		}
+	}
+	
+	@FXML
 	private void onCanvasScroll(ScrollEvent event)
 	{
-		LOGGER.trace("onCanvasScroll(ScrollEvent) triggered");
+		LOGGER.trace("onCanvasScroll(ScrollEvent) triggered with [\u0394x={}, \u0394y={}]", event.getDeltaX(), event.getDeltaY());
 		if (event.isControlDown())
 			tryZoom((event.getDeltaY() / SCROLL_FACTOR) * DEFAULT_ZOOM);
 		
@@ -352,7 +367,7 @@ public class MainController implements Initializable
 	@FXML
 	private void onCanvasZoom(ZoomEvent event)
 	{
-		LOGGER.trace("onCanvasZoom(ZoomEvent) triggered");
+		LOGGER.trace("onCanvasZoom(ZoomEvent) triggered with factor {}", event.getZoomFactor());
 		tryZoom(event.getZoomFactor() - 1);
 	}
 	
@@ -394,7 +409,7 @@ public class MainController implements Initializable
 		LOGGER.trace("onZoomLevelTextChanged() triggered with code: {}", event.getCode());
 		if (currentFrame != null && event.getCode() == KeyCode.ENTER)
 		{
-			double newZoom = currentFrame.zoom;
+			double newZoom = currentFrame.renderer.zoom;
 			try
 			{
 				LOGGER.trace("Attempting to parse double...");
@@ -403,7 +418,7 @@ public class MainController implements Initializable
 			} catch (NumberFormatException e)
 			{
 				LOGGER.warn("Caught exception with message: \"{}\" trying to parse double", e.getMessage());
-				zoomTextField.setText(String.valueOf(currentFrame.zoom * 100));
+				zoomTextField.setText(String.valueOf(currentFrame.renderer.zoom * 100));
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package org.uffr.rbmksim.util;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Consumer;
 
@@ -25,17 +26,31 @@ public class RBMKRenderHelper
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKRenderHelper.class);
 	// Render size for cells.
-	public static final byte CELL_SIZE = 20, LINE_WIDTH = 4;
-	public static final Color CELL_COLOR = Color.LIGHTGREY, BACKGROUND_COLOR = Color.BLACK.brighter();
+	public static final byte CELL_SIZE = 20, LINE_WIDTH = 2;
+	public static final Color
+							CELL_COLOR = colorFromHex(0xa3a3a3),
+							LINE_COLOR = colorFromHex(0x808080),
+							FUEL_OUTLINE = colorFromHex(0x0c3f0c),
+							BOILER_FILL = colorFromHex(0xbe6036),
+							GRAPHITE = colorFromHex(0x2c2c2c),
+							ABSORBER = colorFromHex(0x5b666f),
+							BREEDER = colorFromHex(0x404040),
+							TRITIUM = colorFromHex(0xffed88),
+							BORON = colorFromHex(0x5b666f),
+							COOL = colorFromHex(0x00ffff),
+							BACKGROUND_COLOR = colorFromHex(0x272727);
 	private final Canvas canvas;
 	private final GraphicsContext graphics;
-	private final Queue<Consumer<GraphicsContext>> renderQueue = new ArrayDeque<>();
+	private final Queue<Consumer<GraphicsContext>> renderQueue;
 	private final int rows, cols;
+	public Optional<GridLocation> selectedLocation = Optional.empty();
+	public double zoom = 1;
 	
 	public RBMKRenderHelper(int rows, int cols)
 	{
 		LOGGER.debug("Type 1 renderer constructed");
 		canvas = new Canvas(cols, rows);
+		renderQueue = new ArrayDeque<>(rows * cols);
 		
 		graphics = canvas.getGraphicsContext2D();
 		
@@ -45,37 +60,41 @@ public class RBMKRenderHelper
 		reset();
 	}
 	
-	public RBMKRenderHelper(Canvas canvas, GraphicsContext graphics)
+	public RBMKRenderHelper(Canvas canvas, GraphicsContext graphics, int size)
 	{
 		LOGGER.debug("Type 2 renderer constructed");
 		this.canvas = canvas;
 		this.graphics = graphics;
 		
-		rows = (int) canvas.getHeight();
-		cols = (int) canvas.getWidth();
+		renderQueue = new ArrayDeque<>(size);
+		
+		rows = (int) canvas.getHeight() / CELL_SIZE;
+		cols = (int) canvas.getWidth() / CELL_SIZE;
 		
 		reset();
 	}
 
 	public void reset()
 	{
-		LOGGER.debug("Current rendering reset");
+		LOGGER.trace("Current rendering reset");
 		graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		graphics.fill();
 	}
 	
 	public void flush()
 	{
-		LOGGER.debug("Flushing render queue");
+		LOGGER.trace("Flushing render queue");
 		reset();
 		renderBackground(graphics, canvas);
 		while (!renderQueue.isEmpty())
 			renderQueue.poll().accept(graphics);
+		if (selectedLocation.isPresent())
+			drawSelectionRect(selectedLocation.get(), graphics, zoom);
 	}
 	
 	public void renderColumn(RBMKColumnBase column)
 	{
-		LOGGER.debug("New column at {} offered to render queue", column.getLocation());
+		LOGGER.trace("New column at {} offered to render queue", column.getLocation());
 		renderQueue.offer(column::render);
 	}
 	
@@ -126,72 +145,109 @@ public class RBMKRenderHelper
 		Images.convertInternalToPng(rawSeq, path);
 	}
 	
+	// TODO Move to dedicated classes
+	@Deprecated
 	public static void genericRender(ColumnType type, GridLocation location, GraphicsContext graphics, double zoom)
 	{
-		LOGGER.debug("Generic render handler requested for type {} at {}", type, location);
+		LOGGER.trace("Generic render handler requested for type {} at {}", type, location);
+		renderEdges(location, graphics, zoom);
 		renderCell(location, graphics, zoom);
 		graphics.setLineWidth(LINE_WIDTH);
 		switch (type)
 		{
 			case ABSORBER:
-				graphics.setFill(Color.DARKGRAY);
-				graphics.fillRect((location.getX() + LINE_WIDTH) * CELL_SIZE, (location.getY() + LINE_WIDTH) * CELL_SIZE, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setFill(BORON);
+//				graphics.fillRect((location.getX() + LINE_WIDTH) * CELL_SIZE, (location.getY() + LINE_WIDTH) * CELL_SIZE, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				drawRect(location, LINE_WIDTH * 2, LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 4, CELL_SIZE - LINE_WIDTH * 4, graphics, zoom);
 				break;
 			case BOILER:
 				graphics.setFill(Color.BLACK);
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
-				graphics.setFill(Color.GREEN);
-				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+//				graphics.fillRect((location.getX() * CELL_SIZE + LINE_WIDTH) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
+				drawRect(location, LINE_WIDTH, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				graphics.setFill(BOILER_FILL);
+//				graphics.fillRect((location.getX() * CELL_SIZE + LINE_WIDTH + 6) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - 16) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
+				drawRect(location, LINE_WIDTH + 6, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 8, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
 				break;
 			case BREEDER:
 			case OUTGASSER:
-				graphics.setFill(Color.DARKGRAY);
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
-				graphics.setFill(Color.LIGHTYELLOW);
-				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setFill(BREEDER);
+//				graphics.fillRect((location.getX() * CELL_SIZE + LINE_WIDTH) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
+				drawRect(location, LINE_WIDTH, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				graphics.setFill(TRITIUM);
+//				graphics.fillRect((location.getX() * CELL_SIZE + LINE_WIDTH + 6) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - 16) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
+				drawRect(location, LINE_WIDTH + 6, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 8, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
 				break;
 			case CONTROL_AUTO:// Pass through expected
-				graphics.setFill(Color.RED);
-				graphics.rect(location.getX() + 6, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 6, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setStroke(Color.RED);
+				graphics.setLineWidth(LINE_WIDTH * zoom);
+//				graphics.strokeLine((location.getX() * CELL_SIZE + (LINE_WIDTH * 4.5) * 1.5) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getX() * CELL_SIZE + (LINE_WIDTH * 4.5) * 1.5) * zoom, (location.getY() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom);
+//				graphics.strokeLine((location.getX() * CELL_SIZE + CELL_SIZE - (LINE_WIDTH * 4.5) * 1.5) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getX() * CELL_SIZE + CELL_SIZE - (LINE_WIDTH * 4.5) * 1.5) * zoom, (location.getY() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom);
+				drawLine(location, LINE_WIDTH * 3, LINE_WIDTH, LINE_WIDTH * 3, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				drawLine(location, CELL_SIZE - LINE_WIDTH * 4, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 4, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
 			case CONTROL:
-				graphics.setFill(Color.GRAY);
-				graphics.rect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setStroke(BORON);
+				graphics.setLineWidth(LINE_WIDTH * zoom);
+//				graphics.strokeLine((location.getX() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getX() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getY() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom);
+//				graphics.strokeLine((location.getX() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getX() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom, (location.getY() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom);
+				drawLine(location, LINE_WIDTH, LINE_WIDTH, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				drawLine(location, CELL_SIZE - LINE_WIDTH * 2, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				graphics.setStroke(LINE_COLOR);
+//				graphics.strokeLine((location.getX() * CELL_SIZE + (LINE_WIDTH * 2) * 1.25) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getX() * CELL_SIZE + (LINE_WIDTH * 2) * 1.25) * zoom, (location.getY() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom);
+//				graphics.strokeLine((location.getX() * CELL_SIZE + CELL_SIZE - (LINE_WIDTH * 2) * 1.25) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH * 1.5) * zoom, (location.getX() * CELL_SIZE + CELL_SIZE - (LINE_WIDTH * 2) * 1.25) * zoom, (location.getY() * CELL_SIZE + CELL_SIZE - LINE_WIDTH * 1.5) * zoom);
+				drawLine(location, LINE_WIDTH * 2, LINE_WIDTH, LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				drawLine(location, CELL_SIZE - LINE_WIDTH * 3, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 3, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
 				graphics.setFill(Color.BLACK);
-				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+//				graphics.fillRect((location.getX() * CELL_SIZE + 8) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - 16) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
+				drawRect(location, LINE_WIDTH + 6, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 8, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
 				break;
 			case COOLER:
-				graphics.setFill(Color.WHITE);
-				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + 8, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + 8 - LINE_WIDTH);
+				graphics.setFill(COOL);
+//				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+//				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + 8, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + 8 - LINE_WIDTH);
+				drawRect(location, LINE_WIDTH + 6, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 8, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				drawRect(location, LINE_WIDTH, LINE_WIDTH + 6, CELL_SIZE - LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 8, graphics, zoom);
 				break;
 			case FUEL:
 			case FUEL_SIM:
-				graphics.setFill(Color.DARKGREEN);
-				graphics.rect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
-				graphics.setFill(Color.YELLOW);
-				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setFill(FUEL_OUTLINE);
+//				graphics.fillRect((location.getX() * CELL_SIZE + 6) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - 12) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
+				drawRect(location, 6, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 6, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				graphics.setFill(Color.BLACK);
+//				graphics.fillRect((location.getX() * CELL_SIZE + 8) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - 16) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
+				drawRect(location, 8, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 8, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				break;
 			case MODERATOR:
-				graphics.setFill(Color.DARKGRAY.darker());
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setFill(GRAPHITE);
+//				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				drawRect(location, LINE_WIDTH * 2, LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 4, CELL_SIZE - LINE_WIDTH * 4, graphics, zoom);
 				break;
 			case HEATEX:
 				graphics.setFill(Color.BLACK);
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
-				graphics.setFill(Color.WHEAT);
-				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+//				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				drawRect(location, LINE_WIDTH, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
+				graphics.setFill(COOL);
+//				graphics.fillRect(location.getX() + 8, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - 8, location.getY() + CELL_SIZE - LINE_WIDTH);
+				drawRect(location, LINE_WIDTH + 6, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 8, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
 				break;
 			case REFLECTOR:
-				graphics.setFill(Color.LIGHTGRAY);
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setFill(LINE_COLOR);
+//				graphics.fillRect((location.getX() * CELL_SIZE + LINE_WIDTH * 2) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH * 2) * zoom, (CELL_SIZE - LINE_WIDTH * 4) * zoom, (CELL_SIZE - LINE_WIDTH * 4) * zoom);
+				drawRect(location, LINE_WIDTH * 2, LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 4, CELL_SIZE - LINE_WIDTH * 4, graphics, zoom);
 				break;
 			case STORAGE:
-				graphics.setFill(Color.GRAY.darker());
-				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				graphics.setFill(Color.BLACK.brighter());
+//				graphics.fillRect(location.getX() + LINE_WIDTH, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - LINE_WIDTH, location.getY() + CELL_SIZE - LINE_WIDTH);
+				drawRect(location, LINE_WIDTH, LINE_WIDTH, CELL_SIZE - LINE_WIDTH * 2, CELL_SIZE - LINE_WIDTH * 2, graphics, zoom);
 				break;
 			case BLANK:
 			default: break;
 		}
-		renderEdges(location, graphics, zoom);
+	}
+	
+	public static void clearCanvas(GraphicsContext graphics, Canvas canvas)
+	{
+		LOGGER.trace("Clearing canvas...");
+		graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 	
 	public static void renderBackground(GraphicsContext graphics, Canvas canvas)
@@ -203,16 +259,53 @@ public class RBMKRenderHelper
 	
 	public static void renderCell(GridLocation location, GraphicsContext graphics, double zoom)
 	{
-		LOGGER.trace("Rendering cell background...");
-		graphics.setFill(Color.GRAY);
-		graphics.fillRect(location.getX() * CELL_SIZE * zoom, location.getY() * CELL_SIZE * zoom, CELL_SIZE * zoom, CELL_SIZE * zoom);
+		LOGGER.trace("Rendering generic cell background at {} with zoom {}...", graphics, zoom);
+		graphics.setFill(CELL_COLOR);
+		graphics.fillRect((location.getX() * CELL_SIZE + LINE_WIDTH) * zoom, (location.getY() * CELL_SIZE + LINE_WIDTH) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom, (CELL_SIZE - LINE_WIDTH * 2) * zoom);
 	}
 	
 	public static void renderEdges(GridLocation location, GraphicsContext graphics, double zoom)
 	{
-		LOGGER.trace("Rendering cell edges...");
+		LOGGER.trace("Rendering generic cell edges at {} with zoom {}...", location, zoom);
 		graphics.setLineWidth(LINE_WIDTH);
-		graphics.setFill(Color.BLACK);
-		graphics.rect(location.getX() * CELL_SIZE * zoom, location.getY() * CELL_SIZE * zoom, CELL_SIZE * zoom, CELL_SIZE * zoom);
+		graphics.setFill(LINE_COLOR);
+		graphics.fillRect(location.getX() * CELL_SIZE * zoom, location.getY() * CELL_SIZE * zoom, CELL_SIZE * zoom, CELL_SIZE * zoom);
+	}
+	
+	public static void drawLine(GridLocation location, double x1, double y1, double x2, double y2, GraphicsContext graphics, double zoom)
+	{
+		LOGGER.trace("Drawing line at {}, starting at offset [x={}, y={}], ending at offset [x={}, y={}], and with zoom {}", location, x1, y1, x2, y2, zoom);
+		graphics.strokeLine(
+				(location.getX() * CELL_SIZE + x1 + 1) * zoom,
+				(location.getY() * CELL_SIZE + y1 + 1) * zoom,
+				(location.getX() * CELL_SIZE + x2 + 1) * zoom,
+				(location.getY() * CELL_SIZE + y2 + 1) * zoom);
+	}
+	
+	public static void drawRect(GridLocation location, double x, double y, double w, double h, GraphicsContext graphics, double zoom)
+	{
+		LOGGER.trace("Drawing rectangle at {}, with offset [x={}, y={}], width {} and height {}, with zoom {}", location, x, y, w, h, zoom);
+		graphics.fillRect(
+				(location.getX() * CELL_SIZE + x) * zoom,
+				(location.getY() * CELL_SIZE + y) * zoom,
+				w * zoom,
+				h * zoom);
+	}
+	
+	public static void drawSelectionRect(GridLocation location, GraphicsContext graphics, double zoom)
+	{
+		graphics.setLineWidth(LINE_WIDTH * 2);
+		graphics.setStroke(Color.WHITE);
+		graphics.rect(
+				location.getX() * CELL_SIZE * zoom,
+				location.getY() * CELL_SIZE * zoom,
+				CELL_SIZE * zoom,
+				CELL_SIZE * zoom);
+	}
+	
+	private static Color colorFromHex(int rgb)
+	{
+		final double max = 255;
+		return new Color(((rgb >>> 16) & 0xff) / max, ((rgb >>> 8) & 0xff) / max, (rgb & 0xff) / max, 1);
 	}
 }
