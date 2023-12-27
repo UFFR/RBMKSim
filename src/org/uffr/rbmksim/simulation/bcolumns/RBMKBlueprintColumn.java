@@ -2,8 +2,8 @@ package org.uffr.rbmksim.simulation.bcolumns;
 
 import java.util.Objects;
 
-import com.google.common.hash.Funnel;
-import com.google.common.hash.PrimitiveSink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.main.RBMKFrame;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
@@ -11,11 +11,15 @@ import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.simulation.scolumns.RBMKSimColumnBase;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
 
+import com.google.common.hash.Funnel;
+import com.google.common.hash.PrimitiveSink;
+
 import javafx.scene.canvas.GraphicsContext;
 
 public class RBMKBlueprintColumn extends RBMKColumnBase
 {
 	private static final long serialVersionUID = -1620510951364863121L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKBlueprintColumn.class);
 	public static final Funnel<RBMKBlueprintColumn> FUNNEL = (col, sink) ->
 	{
 		sink.putInt(col.getColumnType().ordinal()).putInt(col.getLocation().getX()).putInt(col.getLocation().getY()).putBoolean(col.isModerated());
@@ -26,6 +30,7 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	public RBMKBlueprintColumn(RBMKSimColumnBase columnBase)
 	{
 		super(columnBase.getLocation(), getCurrentFrame());
+		LOGGER.trace("Creating new RBMKBlueprintColumn from {}", columnBase);
 		columnType = columnBase.getColumnType();
 		moderated = columnBase.isModerated();
 	}
@@ -33,6 +38,7 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	public RBMKBlueprintColumn(GridLocation location, RBMKFrame rbmkFrame, ColumnType columnType, boolean moderated)
 	{
 		super(location, rbmkFrame);
+		LOGGER.trace("Creating new RBMKBlueprintColumn at {}, of type {}, and moderated: {}", location, columnType, moderated);
 		this.columnType = columnType;
 		this.moderated = moderated;
 	}

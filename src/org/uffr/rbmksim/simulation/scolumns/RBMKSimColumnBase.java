@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.google.common.hash.PrimitiveSink;
 import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
 import org.uffr.rbmksim.simulation.Direction;
@@ -12,7 +11,10 @@ import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
 
+import com.google.common.hash.PrimitiveSink;
+
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.text.Text;
 
 public abstract class RBMKSimColumnBase extends RBMKColumnBase
 {
@@ -155,14 +157,14 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 	}
 	
 	@Override
-	public void addInformation(List<String> info)
+	public void addInformation(List<Text> info)
 	{
 		super.addInformation(info);
-		info.add("Heat: " + heat);
+		info.add(new Text("Heat: " + heat));
 		if (getConfig().reasimBoilers)
 		{
-			info.add("Water: " + water);
-			info.add("Steam: " + steam);
+			info.add(new Text("Water: " + water));
+			info.add(new Text("Steam: " + steam));
 		}
 	}
 	

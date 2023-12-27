@@ -146,7 +146,6 @@ public class RBMKRenderHelper
 	}
 	
 	// TODO Move to dedicated classes
-	@Deprecated
 	public static void genericRender(ColumnType type, GridLocation location, GraphicsContext graphics, double zoom)
 	{
 		LOGGER.trace("Generic render handler requested for type {} at {}", type, location);

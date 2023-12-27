@@ -3,6 +3,7 @@ package org.uffr.rbmksim.util;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 @FunctionalInterface
 public interface InfoProvider
 {

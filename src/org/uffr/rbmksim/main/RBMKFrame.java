@@ -450,12 +450,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setSelectedLocation(Optional<GridLocation> selectedLocation)
 	{
-		if (this.selectedLocation.equals(selectedLocation))
-			this.selectedLocation = Optional.empty();
-		else
-			this.selectedLocation = selectedLocation;
-		
-		renderer.selectedLocation = this.selectedLocation;
+		renderer.selectedLocation = this.selectedLocation = this.selectedLocation.equals(selectedLocation) ? Optional.empty() : selectedLocation;
 	}
 	
 	@Override
@@ -463,8 +458,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	{
 		sink.putInt(rows).putInt(columns).putInt(ticks).putString(name, UTF_8).putString(creatorName, UTF_8).putString(version, UTF_8);
 		config.funnelInto(sink);
-		grid.forEach(c -> c.funnelInto(sink));
-		registeredLocations.forEach(l -> GridLocation.FUNNEL.funnel(l, sink));
+		registeredLocations.forEach(l -> {grid.get(l.getX(), l.getY()).funnelInto(sink); GridLocation.FUNNEL.funnel(l, sink);});
 	}
 	
 	@Override

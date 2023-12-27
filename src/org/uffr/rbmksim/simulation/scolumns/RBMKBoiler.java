@@ -5,16 +5,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import com.google.common.hash.Funnel;
-import com.google.common.hash.PrimitiveSink;
 import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.FluidType;
 import org.uffr.rbmksim.simulation.GridLocation;
 
+import com.google.common.hash.Funnel;
+import com.google.common.hash.PrimitiveSink;
+
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 
 public class RBMKBoiler extends RBMKSimColumnBase
 {
@@ -65,11 +67,11 @@ public class RBMKBoiler extends RBMKSimColumnBase
 	}
 	
 	@Override
-	public void addInformation(List<String> info)
+	public void addInformation(List<Text> info)
 	{
 		super.addInformation(info);
-		info.add("Water: " + waterTank.getFill() + '/' + waterTank.maxFill + "mB");
-		info.add(steamTank.getFluidType().name + ": " + steamTank.getFill() + '/' + steamTank.maxFill + "mB");
+		info.add(new Text("Water: " + waterTank.getFill() + '/' + waterTank.maxFill + "mB"));
+		info.add(new Text(steamTank.getFluidType().name + ": " + steamTank.getFill() + '/' + steamTank.maxFill + "mB"));
 	}
 	
 	@Override

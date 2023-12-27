@@ -9,15 +9,21 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
+import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintColumn;
 import org.uffr.rbmksim.util.I18n;
-import org.uffr.rbmksim.util.InfoProvider;
+import org.uffr.rbmksim.util.InfoProviderNT;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
+import org.uffr.uffrlib.misc.Version;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -30,24 +36,33 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.text.TextFlow;
+import javafx.util.StringConverter;
 
 public class MainController implements Initializable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainController.class);
-	public static final Set<String> ALLOWED_PROPERTIES = ImmutableSet.of("text", "promptText", "tooltip", "accessibleText");
+	public static final Set<String> ALLOWED_PROPERTIES = ImmutableSet.of("text", "promptText", "accessibleText");
+	// From https://semver.org/
+	private static final String SEMVER_REGEX = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
+	private static final Pattern SEMVER_PATTERN = Pattern.compile(SEMVER_REGEX);
 	private static final double SCROLL_FACTOR = 40, DEFAULT_ZOOM = 0.25, MAX_ZOOM = 5, MIN_ZOOM = 0.25;
 	private RBMKFrame currentFrame = null;
 	@FXML
-	private TextArea infoTextArea;
+	private TextFlow infoTextArea;
+//	private TextArea infoTextArea;
 	@FXML
 	private TextField nameTextField, creatorTextField, versionTextField, zoomTextField;
 	@FXML
@@ -61,9 +76,13 @@ public class MainController implements Initializable
 	@FXML
 	private Pane canvasPane;
 	@FXML
+	private AnchorPane canvasAnchor;
+	@FXML
 	private Canvas mainCanvas;
 	@FXML
 	private Label nameLabel, creatorLabel, versionLabel, dateLabel, zoomLabel;
+	@FXML
+	private Tooltip nameTooltip, creatorNameTooltip, versionTooltip, dateTooltip;
 	
 	private enum GraphType
 	{
@@ -145,9 +164,9 @@ public class MainController implements Initializable
 						try
 						{
 							method.invoke(item, I18n.resolve(unlocalized));
-						} catch (InvocationTargetException | SecurityException e)
+						} catch (IllegalArgumentException | InvocationTargetException | SecurityException e)
 						{
-							LOGGER.debug("Assumed property controlled by setter method [" + method.getName() + "] has entry in lang file but does not have associated assumed getter method", e);
+							LOGGER.warn("Either assumed property controlled by setter method [" + method.getName() + "] has entry in lang file but does not have associated assumed getter method or method is not a string", e);
 						}
 					}
 				}
@@ -158,14 +177,44 @@ public class MainController implements Initializable
 			}
 		}
 		LOGGER.trace("I18n complete");
+
+		LOGGER.trace("Setting up miscellaneous fields...");
 		
 		mainCanvas.heightProperty().bind(canvasPane.heightProperty());
 		mainCanvas.widthProperty().bind(canvasPane.widthProperty());
 		
-		LOGGER.trace("Setting up default values...");
 		for (GraphType type : GraphType.values())
 			graphSelectionBox.getItems().add(type);
 		graphSelectionBox.selectionModelProperty().get().selectFirst();
+		
+		infoTextArea.setStyle("-fx-font-family: monospace; -fx-background-color: DIMGRAY; -fx-text-fill: WHITE;");
+
+		versionTextField.setTextFormatter(new TextFormatter<>(new StringConverter<Version>()
+		{
+			@Override
+			public Version fromString(String arg0)
+			{
+				final String major, minor, patch, suffix, metadata;
+				final Matcher matcher = SEMVER_PATTERN.matcher(arg0);
+				
+				if (!matcher.find())
+					return null;
+				
+				major = matcher.group(1);
+				minor = matcher.group(2);
+				patch = matcher.group(3);
+				suffix = matcher.group(4);
+				metadata = matcher.group(5);
+				
+				return new Version(Integer.parseUnsignedInt(major), Integer.parseUnsignedInt(minor), Integer.parseUnsignedInt(patch), suffix, metadata);
+			}
+
+			@Override
+			public String toString(Version arg0)
+			{
+				return arg0 == null ? "1.0.0" : arg0.toString();
+			}
+		}));
 		
 		LOGGER.debug("Initialization complete");
 	}
@@ -174,19 +223,25 @@ public class MainController implements Initializable
 	{
 		LOGGER.debug("onFrameChanged() triggered");
 		currentFrame = Main.getFrame().orElse(null);
+		RBMKRenderHelper.clearCanvas(mainCanvas.getGraphicsContext2D(), mainCanvas);
 		RBMKRenderHelper.renderBackground(mainCanvas.getGraphicsContext2D(), mainCanvas);
+		RBMKColumnBase.setCurrentFrame(currentFrame);
 		if (currentFrame == null)
 		{
 			nameTextField.setText("");
 			creatorTextField.setText("");
 			versionTextField.setText("");
 			dateInput.setValue(null);
+			canvasAnchor.setPrefWidth(Region.USE_COMPUTED_SIZE);
+			canvasAnchor.setPrefHeight(Region.USE_COMPUTED_SIZE);
 		} else
 		{
 			nameTextField.setText(currentFrame.getName());
 			creatorTextField.setText(currentFrame.getCreatorName());
 			versionTextField.setText(currentFrame.getVersion());
 			dateInput.setValue(currentFrame.getDate());
+			canvasAnchor.setPrefWidth(currentFrame.columns * RBMKRenderHelper.CELL_SIZE);
+			canvasAnchor.setPrefHeight(currentFrame.rows * RBMKRenderHelper.CELL_SIZE);
 			currentFrame.render();
 		}
 	}
@@ -349,7 +404,13 @@ public class MainController implements Initializable
 		final int x = (int) event.getX() / RBMKRenderHelper.CELL_SIZE, y = (int) event.getY() / RBMKRenderHelper.CELL_SIZE;
 		if (currentFrame != null)
 		{
-			currentFrame.setSelectedLocation(Optional.of(new GridLocation(x, y)));
+			final GridLocation loc = new GridLocation(x, y);
+			final RBMKColumnBase column = currentFrame.getColumnAtCoords(loc);
+			currentFrame.setSelectedLocation(Optional.of(loc));
+			if (column != null && currentFrame.getSelectedLocation().isPresent())
+				setInfoArea(column);
+			else
+				infoTextArea.getChildren().clear();
 			currentFrame.render();
 		}
 	}
@@ -423,10 +484,15 @@ public class MainController implements Initializable
 		}
 	}
 	
-	public void setInfoArea(InfoProvider infoProvider)
+	public void setInfoArea(@Nullable InfoProviderNT infoProvider)
 	{
 		LOGGER.debug("Set infoTextArea with data provided by InfoProvider instance");
-		infoTextArea.setText(infoProvider.asProperString());
+		infoTextArea.getChildren().clear();
+		if (infoProvider != null)
+			infoTextArea.getChildren().addAll(infoProvider.getText());
+		
+//		infoTextArea.getChildren().add(new Text(infoProvider.asProperString()));
+//		infoTextArea.setText(infoProvider.asProperString());
 	}
 	
 	private static double clampZoom(double amount)

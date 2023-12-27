@@ -14,11 +14,13 @@ import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.fuels.NeutronType;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelRod;
+import org.uffr.rbmksim.util.I18n;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
 
 import com.google.common.hash.PrimitiveSink;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.text.Text;
 
 public class RBMKFuel extends RBMKFluxReceiverBase
 {
@@ -200,13 +202,13 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	}
 	
 	@Override
-	public void addInformation(List<String> info)
+	public void addInformation(List<Text> info)
 	{
 		super.addInformation(info);
 		if (fuelRod.isPresent())
 			fuelRod.get().addInformation(info);
 		else
-			info.add("Has no fuel rod");
+			info.add(new Text(I18n.resolve("column.fuel.empty")));
 	}
 	
 	@Override

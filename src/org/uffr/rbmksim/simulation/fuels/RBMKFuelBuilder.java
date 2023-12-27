@@ -11,8 +11,8 @@ public class RBMKFuelBuilder
 	private FuelCategory fuelCategory = FuelCategory.REAL;
 	public RBMKFuelBuilder(String name, String fullName, double reactivity, double meltingPoint, double selfRate)
 	{
-		this.name = name;
-		this.fullName = fullName;
+		this.name = "fuel.type.name." + name;
+		this.fullName = "fuel.type.desc." + fullName;
 		this.reactivity = reactivity;
 		this.meltingPoint = meltingPoint;
 		this.selfRate = selfRate;

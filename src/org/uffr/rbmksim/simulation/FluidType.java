@@ -1,12 +1,14 @@
 package org.uffr.rbmksim.simulation;
 
+import org.uffr.rbmksim.util.I18n;
+
 public enum FluidType
 {
-	WATER("Water", 20),
-	STEAM("Steam", 100),
-	DENSE_STEAM("Dense Steam", 300),
-	SUPER_DENSE_STEAM("Super Dense Steam", 450),
-	ULTRA_DENSE_STEAM("Ultra Dense Steam", 600);
+	WATER("fluid.water", 20),
+	STEAM("fluid.steam", 100),
+	DENSE_STEAM("fluid.denseSteam", 300),
+	SUPER_DENSE_STEAM("fluid.superSteam", 450),
+	ULTRA_DENSE_STEAM("fluid.ultraSteam", 600);
 	public final int temperature;
 	public final String name;
 	private FluidType(String name, int temperature)
@@ -18,6 +20,6 @@ public enum FluidType
 	@Override
 	public String toString()
 	{
-		return name + " (" + temperature + "°C)";
+		return I18n.resolve("fluid.withTemp", name, temperature);
 	}
 }

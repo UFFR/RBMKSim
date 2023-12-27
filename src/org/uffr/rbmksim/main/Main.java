@@ -8,7 +8,6 @@ import org.uffr.rbmksim.config.ProgramConfig;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.uffrlib.misc.Version;
-import org.uffr.uffrlib.misc.Version.VersionSuffix;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -24,7 +23,7 @@ public class Main extends Application
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	// Useful for tracking discrepancies between saved files and the currently running program.
-	private static final Version VERSION = new Version(0, 5, 0, VersionSuffix.SNAPSHOT);
+	private static final Version VERSION = new Version(0, 5, 0, "SNAPSHOT");
 	// Basic strings reused in various places.
 	public static final String EXT_BPRINT = "rbmk",
 							   EXT_RSIM = "rsim",

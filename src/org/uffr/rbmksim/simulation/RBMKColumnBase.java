@@ -9,15 +9,20 @@ import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.config.SimulationConfig;
 import org.uffr.rbmksim.main.Main;
 import org.uffr.rbmksim.main.RBMKFrame;
-import org.uffr.rbmksim.util.InfoProvider;
+import org.uffr.rbmksim.util.I18n;
+import org.uffr.rbmksim.util.InfoProviderNT;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
+import org.uffr.rbmksim.util.TextBuilder;
 import org.uffr.uffrlib.hashing.Hashable;
 
 import com.google.common.hash.PrimitiveSink;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
-public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializable
+public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serializable
 {
 	private static final long serialVersionUID = -4281135799096443502L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKColumnBase.class);
@@ -95,11 +100,14 @@ public abstract class RBMKColumnBase implements InfoProvider, Hashable, Serializ
 	}
 
 	@Override
-	public void addInformation(List<String> info)
+	public void addInformation(List<Text> info)
 	{
-		info.add("Column Info:");
-		info.add("Type: " + getColumnType());
-		info.add("Moderated: " + isModerated());
+		info.add(new TextBuilder(I18n.resolve("column.info")).setUnderline(true).setFont(new Font(20)).getText());
+		info.add(InfoProviderNT.getNewline());
+		info.add(new TextBuilder(I18n.resolve("column.type", getColumnType())).setFill(Color.YELLOW).getText());
+		info.add(InfoProviderNT.getNewline());
+		info.add(new TextBuilder(I18n.resolve("column.moderated", isModerated())).setFill(Color.YELLOW).getText());
+		info.add(InfoProviderNT.getNewline());
 	}
 
 	@Override

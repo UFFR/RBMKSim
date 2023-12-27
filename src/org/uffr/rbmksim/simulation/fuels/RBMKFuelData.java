@@ -6,12 +6,17 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-import org.uffr.rbmksim.util.InfoProvider;
+import org.uffr.rbmksim.util.I18n;
+import org.uffr.rbmksim.util.InfoProviderNT;
+import org.uffr.rbmksim.util.TextBuilder;
 import org.uffr.uffrlib.hashing.Hashable;
 
 import com.google.common.hash.PrimitiveSink;
 
-public class RBMKFuelData implements InfoProvider, Hashable, Serializable
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+
+public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
 {
 	private static final long serialVersionUID = -8545270346483383342L;
 	private final double reactivity, meltingPoint;
@@ -121,25 +126,43 @@ public class RBMKFuelData implements InfoProvider, Hashable, Serializable
 	}
 	
 	@Override
-	public void addInformation(List<String> info)
+	public void addInformation(List<Text> info)
 	{
-		info.add(name());
-		info.add(fullName());
-		info.add("Reactivity: " + reactivity());
+		info.add(new Text(I18n.resolve(name)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve(fullName)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.reactivity", reactivity)));
+		info.add(InfoProviderNT.getNewline());
 		if (selfRate() > 0 || burnFunction() == EnumBurnFunction.SIGMOID)
-			info.add("Self-igniting");
-		info.add("Yield:" + getYield());
-		info.add("Flux function: " + burnFunction());
-		info.add("Depletion function: " + depleteFunction());
-		info.add("Self-rate: " + selfRate());
-		info.add("Xenon generation: " + xenonGen());
-		info.add("Xenon burn: " + xenonBurn());
-		info.add("Heat generation: " + heatGen());
-		info.add("Melting point: " + meltingPoint());
-		info.add("Diffusion: " + diffusion());
-		info.add("Neutron receive type: " + receiveType());
-		info.add("Neutron return type: " + returnType());
-		info.add("Category: " + fuelCategory());
+		{
+			info.add(new TextBuilder(I18n.resolve("fuel.selfIniting")).setStroke(Color.RED).getText());
+			info.add(InfoProviderNT.getNewline());
+		}
+		info.add(new Text(I18n.resolve("fuel.yield", yield)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.fluxFunction", burnFunction)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.depletionFunction", depleteFunction)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.selfRate", selfRate)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.xenonGen", xenonGen)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.xenonBurn", xenonBurn)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.heatGen", heatGen)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.diffusion", diffusion)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.neutronIn", inType)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.neutronOut", outType)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.meltingPoint", meltingPoint)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.category", fuelCategory)));
+		info.add(InfoProviderNT.getNewline());
 	}
 	
 	@Override

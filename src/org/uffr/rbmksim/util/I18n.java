@@ -78,7 +78,8 @@ public class I18n
 			MiscUtil.basicKVToMap(fullString, map);
 		} catch (IOException e)
 		{
-			LOGGER.error("Unable to initialize locale [" + locale + "], this should not be possible!", e);
+			LOGGER.error("Unable to initialize locale [{}], this should not be possible!", locale);
+			LOGGER.error("Got error:", e);
 			Main.openErrorDialog(e);
 		}
 	}
@@ -97,14 +98,14 @@ public class I18n
 	
 	public static String resolve(String key)
 	{
-		LOGGER.trace("Resolving [" + key + "] without format");
-		return currentLangMap.getOrDefault(key, key);
+		LOGGER.trace("Resolving [{}] without format", key);
+		return currentLangMap.getOrDefault(key, LOCALE_MAP.get(Locale.US).getOrDefault(key, key));
 	}
 	
 	public static String resolve(String key, Object... format)
 	{
-		LOGGER.trace("Resolving [" + key + "] with format");
-		return String.format(currentLocale, currentLangMap.getOrDefault(key, key), format);
+		LOGGER.trace("Resolving [{}] with format {}", key, format);
+		return String.format(currentLocale, currentLangMap.getOrDefault(key, LOCALE_MAP.get(Locale.US).getOrDefault(key, key)), format);
 	}
 
 }

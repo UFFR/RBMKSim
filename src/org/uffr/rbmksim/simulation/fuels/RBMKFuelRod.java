@@ -6,13 +6,18 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-import org.uffr.rbmksim.util.InfoProvider;
+import org.uffr.rbmksim.util.I18n;
+import org.uffr.rbmksim.util.InfoProviderNT;
+import org.uffr.rbmksim.util.TextBuilder;
 import org.uffr.uffrlib.hashing.Hashable;
 
 import com.google.common.hash.HashCode;
 import com.google.common.hash.PrimitiveSink;
 
-public class RBMKFuelRod implements InfoProvider, Hashable, Serializable, Cloneable
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+
+public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Cloneable
 {
 	private static final long serialVersionUID = -9197159590599662941L;
 	public static final int defaultYield = 100_000_000;
@@ -46,26 +51,51 @@ public class RBMKFuelRod implements InfoProvider, Hashable, Serializable, Clonea
 	}
 	
 	@Override
-	public void addInformation(List<String> info)
+	public void addInformation(List<Text> info)
 	{
-		info.add(data.name());
-		info.add(data.fullName());
+		info.add(new Text(I18n.resolve(data.name())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve(data.fullName())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.reactivity", data.reactivity())));
+		info.add(InfoProviderNT.getNewline());
 		if (data.selfRate() > 0 || data.burnFunction() == EnumBurnFunction.SIGMOID)
-			info.add("Self-igniting");
-		
-		info.add("Depletion: " + sigFigRounding((remainingYield / data.getYield()) * 100, 5, 0) + '%');
-		info.add("Xenon poison: " + sigFigRounding(xenon, 4, 0) + '%');
-		info.add("Splits with: " + data.receiveType().desc);
-		info.add("Splits into: " + data.returnType().desc);
-		info.add("Flux function: " + getFunctionDesc(data, getEnrichment()));
-		info.add("Function type: " + data.burnFunction().title);
-		info.add("Xenon gen function: x * " + data.xenonGen());
-		info.add("Xenon burn function: x² * " + data.xenonBurn());
-		info.add("Heat per tick at full power: " + data.heatGen() + "°C");
-		info.add("Diffusion: " + data.diffusion() + '½');
-		info.add("Hull heat: " + sigFigRounding(hullHeat, 2, 0) + "°C");
-		info.add("Core heat: " + sigFigRounding(coreHeat, 2, 0) + "°C");
-		info.add("Melting point: " + data.meltingPoint() + "°C");
+		{
+			info.add(new TextBuilder(I18n.resolve("fuel.selfIniting")).setStroke(Color.RED).getText());
+			info.add(InfoProviderNT.getNewline());
+		}
+		info.add(new Text(I18n.resolve("fuel.depletion", sigFigRounding((remainingYield / data.getYield()) * 100, 5, 0))));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.fluxFunction", getFunctionDesc(data, getEnrichment()))));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.functionType", data.burnFunction().title)));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.depletionFunction", data.depleteFunction())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.selfRate", data.selfRate())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new TextBuilder(I18n.resolve("fuel.xenonGen", data.xenonGen())).setStroke(Color.PURPLE).getText());
+		info.add(InfoProviderNT.getNewline());
+		info.add(new TextBuilder(I18n.resolve("fuel.xenonBurn", data.xenonBurn())).setStroke(Color.PURPLE).getText());
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.xenon", sigFigRounding(xenon, 4, 0))));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.heatGen", data.heatGen())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.meltingPoint", data.meltingPoint())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.diffusion", data.diffusion())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.neutronIn", data.receiveType())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.neutronOut", data.returnType())));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.hullHeat", sigFigRounding(hullHeat, 2, 0))));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.coreHeat", sigFigRounding(coreHeat, 2, 0))));
+		info.add(InfoProviderNT.getNewline());
+		info.add(new Text(I18n.resolve("fuel.meltingPoint", data.meltingPoint())));
+		info.add(InfoProviderNT.getNewline());
 	}
 	
 	@Override
