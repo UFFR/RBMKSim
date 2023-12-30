@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.FluidType;
@@ -23,9 +22,9 @@ public class RBMKBoiler extends RBMKSimColumnBase
 	private static final long serialVersionUID = -7777582161264166919L;
 	protected final FluidTank waterTank = new FluidTank(FluidType.WATER, 10000);
 	protected final FluidTank steamTank = new FluidTank(FluidType.STEAM, 1000000);
-	public RBMKBoiler(GridLocation location, RBMKSimulation simulation)
+	public RBMKBoiler(GridLocation location)
 	{
-		super(location, simulation);
+		super(location);
 	}
 	
 	public FluidType getSteamType()

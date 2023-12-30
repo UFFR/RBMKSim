@@ -3,6 +3,7 @@ package org.uffr.rbmksim.main;
 import java.util.List;
 import java.util.Objects;
 
+import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintColumn;
@@ -14,6 +15,8 @@ import org.uffr.rbmksim.simulation.scolumns.RBMKBlank;
 import org.uffr.rbmksim.simulation.scolumns.RBMKBoiler;
 import org.uffr.rbmksim.simulation.scolumns.RBMKControl;
 import org.uffr.rbmksim.simulation.scolumns.RBMKFuel;
+import org.uffr.rbmksim.simulation.scolumns.RBMKModerator;
+import org.uffr.rbmksim.simulation.scolumns.RBMKReflector;
 import org.uffr.rbmksim.simulation.scolumns.RBMKSimColumnBase;
 
 import javafx.scene.canvas.Canvas;
@@ -23,15 +26,26 @@ public class RBMKSimulation extends RBMKFrame
 	private static final long serialVersionUID = 5530885107200613696L;
 	public static final byte TICK = 50;
 	private boolean meltedDown = false, running = false;
-//	private static final TimerTask TICK_TASK = new TimerTask()
-//		{
-//			@Override public void run() {Main.getFrame().tick();}
-//		};
 		
 	public RBMKSimulation(Canvas canvas)
 	{
 		super(canvas);
-//		timer.schedule(TICK_TASK, TICK, TICK);
+	}
+	
+	@Override
+	protected RBMKColumnBase newOfType(GridLocation location, ColumnType type)
+	{
+		// TODO FuelSim, control rods, outgasser, breeder, storage, cooler, heat exchanger
+		switch (type)
+		{
+			default				-> throw new IllegalArgumentException("Unimplemented type: " + type);
+			case BLANK			-> {return new RBMKBlank(location);}
+			case FUEL, FUEL_SIM -> {return new RBMKFuel(location, false);}
+			case BOILER			-> {return new RBMKBoiler(location);}
+			case MODERATOR		-> {return new RBMKModerator(location);}
+			case ABSORBER		-> {return new RBMKAbsorber(location);}
+			case REFLECTOR		-> {return new RBMKReflector(location);}
+		}
 	}
 	
 	@Override
@@ -193,11 +207,11 @@ public class RBMKSimulation extends RBMKFrame
 				final RBMKSimColumnBase newColumn;
 				switch (column.getColumnType())
 				{
-					case ABSORBER: newColumn = new RBMKAbsorber(location, this); break;
-					case BLANK: newColumn = new RBMKBlank(location, this); break;
-					case BOILER: newColumn = new RBMKBoiler(location, this); break;
+					case ABSORBER: newColumn = new RBMKAbsorber(location); break;
+					case BLANK: newColumn = new RBMKBlank(location); break;
+					case BOILER: newColumn = new RBMKBoiler(location); break;
 					case BREEDER:
-					case OUTGASSER: newColumn = new RBMKBlank(location, this); break; // TODO Setup breeder column type
+					case OUTGASSER: newColumn = new RBMKBlank(location); break; // TODO Setup breeder column type
 					default: throw new IllegalStateException("Encountered unknown column type while converting!");
 				}
 				grid.set(col, row, newColumn);

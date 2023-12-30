@@ -5,10 +5,10 @@ import static org.uffr.rbmksim.util.RBMKRenderHelper.LINE_WIDTH;
 
 import java.util.Objects;
 
-import com.google.common.hash.PrimitiveSink;
-import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
+
+import com.google.common.hash.PrimitiveSink;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -34,9 +34,9 @@ public abstract class RBMKControl extends RBMKSimColumnBase
 	protected final boolean moderated;
 	protected ControlRodColor rodColor;
 	protected double lastLevel, level, targetLevel;
-	public RBMKControl(GridLocation location, RBMKSimulation simulation, boolean moderated)
+	public RBMKControl(GridLocation location, boolean moderated)
 	{
-		super(location, simulation);
+		super(location);
 		this.moderated = moderated;
 	}
 

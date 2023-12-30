@@ -2,10 +2,13 @@ package org.uffr.rbmksim.simulation.bcolumns;
 
 import java.util.Objects;
 
-import com.google.common.hash.PrimitiveSink;
+import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.FluidType;
+import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.scolumns.RBMKBoiler;
 import org.uffr.rbmksim.simulation.scolumns.RBMKBoiler.FluidTank;
+
+import com.google.common.hash.PrimitiveSink;
 
 public class RBMKBlueprintBoiler extends RBMKBlueprintColumn
 {
@@ -15,6 +18,13 @@ public class RBMKBlueprintBoiler extends RBMKBlueprintColumn
 	{
 		super(boiler);
 		steamTank = new FluidTank(boiler.getSteamType(), 1000000);
+		waterTank = new FluidTank(FluidType.WATER, 10000);
+	}
+	
+	public RBMKBlueprintBoiler(GridLocation location, ColumnType columnType)
+	{
+		super(location, columnType, false);
+		steamTank = new FluidTank(FluidType.STEAM, 1000000);
 		waterTank = new FluidTank(FluidType.WATER, 10000);
 	}
 	

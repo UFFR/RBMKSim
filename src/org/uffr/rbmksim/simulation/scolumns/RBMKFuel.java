@@ -30,15 +30,15 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	private final boolean moderated;
 	protected Optional<RBMKFuelRod> fuelRod = Optional.empty();
 	protected double fluxFast, fluxSlow;
-	public RBMKFuel(GridLocation location, RBMKSimulation simulation, boolean moderated)
+	public RBMKFuel(GridLocation location, boolean moderated)
 	{
-		super(location, simulation);
+		super(location);
 		this.moderated = moderated;
 	}
 	
-	public RBMKFuel(GridLocation location, RBMKSimulation simulation, boolean moderated, Optional<RBMKFuelData> data)
+	public RBMKFuel(GridLocation location, boolean moderated, Optional<RBMKFuelData> data)
 	{
-		this(location, simulation, moderated);
+		this(location, moderated);
 		fuelRod = Optional.ofNullable(data.isPresent() ? new RBMKFuelRod(data.get()) : null);
 	}
 	
@@ -198,7 +198,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	@Override
 	public void render(GraphicsContext context)
 	{
-		RBMKRenderHelper.genericRender(getColumnType(), location, context, getCurrentFrame().getRenderer().zoom);
+		RBMKRenderHelper.basicRender(getColumnType(), location, context, getCurrentFrame().getRenderer().zoom);
 	}
 	
 	@Override

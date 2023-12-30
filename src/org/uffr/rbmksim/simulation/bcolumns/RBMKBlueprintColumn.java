@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uffr.rbmksim.main.RBMKFrame;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
@@ -26,18 +25,19 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	};
 	
 	private final ColumnType columnType;
+	@Deprecated
 	private final boolean moderated;
 	public RBMKBlueprintColumn(RBMKSimColumnBase columnBase)
 	{
-		super(columnBase.getLocation(), getCurrentFrame());
+		super(columnBase.getLocation());
 		LOGGER.trace("Creating new RBMKBlueprintColumn from {}", columnBase);
 		columnType = columnBase.getColumnType();
 		moderated = columnBase.isModerated();
 	}
 	
-	public RBMKBlueprintColumn(GridLocation location, RBMKFrame rbmkFrame, ColumnType columnType, boolean moderated)
+	public RBMKBlueprintColumn(GridLocation location, ColumnType columnType, boolean moderated)
 	{
-		super(location, rbmkFrame);
+		super(location);
 		LOGGER.trace("Creating new RBMKBlueprintColumn at {}, of type {}, and moderated: {}", location, columnType, moderated);
 		this.columnType = columnType;
 		this.moderated = moderated;
@@ -58,7 +58,7 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	@Override
 	public void render(GraphicsContext graphics)
 	{
-		RBMKRenderHelper.genericRender(columnType, location, graphics, getCurrentFrame().getRenderer().zoom);
+		RBMKRenderHelper.basicRender(columnType, location, graphics, getCurrentFrame().getRenderer().zoom);
 	}
 	
 	@Override

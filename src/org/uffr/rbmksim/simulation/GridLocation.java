@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.google.common.hash.Funnel;
+import com.google.errorprone.annotations.Immutable;
 
+@Immutable
 public class GridLocation implements Serializable
 {
 	private static final long serialVersionUID = 2469677386448724846L;

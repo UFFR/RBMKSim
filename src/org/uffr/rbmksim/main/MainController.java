@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
-import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintColumn;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.rbmksim.util.InfoProviderNT;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
@@ -32,6 +31,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -74,6 +74,10 @@ public class MainController implements Initializable
 	@FXML
 	private ChoiceBox<GraphType> graphSelectionBox;
 	@FXML
+	private ChoiceBox<ColumnType> columnTypeBox;
+	@FXML
+	private Button setColumnButton, resetColumnButton;
+	@FXML
 	private Pane canvasPane;
 	@FXML
 	private AnchorPane canvasAnchor;
@@ -82,28 +86,7 @@ public class MainController implements Initializable
 	@FXML
 	private Label nameLabel, creatorLabel, versionLabel, dateLabel, zoomLabel;
 	@FXML
-	private Tooltip nameTooltip, creatorNameTooltip, versionTooltip, dateTooltip;
-	
-	private enum GraphType
-	{
-		HEAT("heat"),
-		FLUX("flux"),
-		STEAM("steam"),
-		POWER("power"),
-		COOLANT("coolant");
-		
-		public final String key;
-		private GraphType(String key)
-		{
-			this.key = key;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return I18n.resolve("app.graphType." + key);
-		}
-	}
+	private Tooltip nameTooltip, creatorNameTooltip, versionTooltip, dateTooltip, setColumnButtonTooltip;
 	
 	@Override
 	public void initialize(URL url, ResourceBundle bundle)
@@ -166,7 +149,8 @@ public class MainController implements Initializable
 							method.invoke(item, I18n.resolve(unlocalized));
 						} catch (IllegalArgumentException | InvocationTargetException | SecurityException e)
 						{
-							LOGGER.warn("Either assumed property controlled by setter method [" + method.getName() + "] has entry in lang file but does not have associated assumed getter method or method is not a string", e);
+							LOGGER.warn("Either assumed property controlled by setter method [{}] has entry in lang file but does not have associated assumed getter method or method is not a string", method.getName());
+							LOGGER.warn("Got exception:", e);
 						}
 					}
 				}
@@ -176,20 +160,20 @@ public class MainController implements Initializable
 				LOGGER.error("Unable to retrieve field!", e);
 			}
 		}
-		LOGGER.trace("I18n complete");
+		LOGGER.trace("I18n complete. Setting up miscellaneous fields...");
 
-		LOGGER.trace("Setting up miscellaneous fields...");
-		
 		mainCanvas.heightProperty().bind(canvasPane.heightProperty());
 		mainCanvas.widthProperty().bind(canvasPane.widthProperty());
 		
-		for (GraphType type : GraphType.values())
-			graphSelectionBox.getItems().add(type);
+		graphSelectionBox.getItems().addAll(GraphType.values());
 		graphSelectionBox.selectionModelProperty().get().selectFirst();
+		columnTypeBox.getItems().addAll(ColumnType.values());
+		columnTypeBox.selectionModelProperty().get().selectFirst();
 		
+		// The "-fx-text-fill" thing doesn't do anything, doesn't seem to work
 		infoTextArea.setStyle("-fx-font-family: monospace; -fx-background-color: DIMGRAY; -fx-text-fill: WHITE;");
 
-		versionTextField.setTextFormatter(new TextFormatter<>(new StringConverter<Version>()
+		versionTextField.setTextFormatter(new TextFormatter<Version>(new StringConverter<Version>()
 		{
 			@Override
 			public Version fromString(String arg0)
@@ -238,7 +222,7 @@ public class MainController implements Initializable
 		{
 			nameTextField.setText(currentFrame.getName());
 			creatorTextField.setText(currentFrame.getCreatorName());
-			versionTextField.setText(currentFrame.getVersion());
+			versionTextField.setText(currentFrame.getVersion().toString());
 			dateInput.setValue(currentFrame.getDate());
 			canvasAnchor.setPrefWidth(currentFrame.columns * RBMKRenderHelper.CELL_SIZE);
 			canvasAnchor.setPrefHeight(currentFrame.rows * RBMKRenderHelper.CELL_SIZE);
@@ -255,12 +239,12 @@ public class MainController implements Initializable
 		Main.setFrame(new RBMKBlueprint(mainCanvas));
 		
 		// TODO Remove
-		final ColumnType testType = ColumnType.BLANK;
+		/*final ColumnType testType = ColumnType.BLANK;
 		final RBMKFrame frame = Main.getFrame().get();
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), frame, testType, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), frame, testType, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 0), frame, testType, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 10), frame, testType, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), testType, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), testType, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 0), testType, false));
+		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 10), testType, false));*/
 		
 		onFrameChanged();
 	}
@@ -407,10 +391,7 @@ public class MainController implements Initializable
 			final GridLocation loc = new GridLocation(x, y);
 			final RBMKColumnBase column = currentFrame.getColumnAtCoords(loc);
 			currentFrame.setSelectedLocation(Optional.of(loc));
-			if (column != null && currentFrame.getSelectedLocation().isPresent())
-				setInfoArea(column);
-			else
-				infoTextArea.getChildren().clear();
+			setInfoArea(column != null && currentFrame.getSelectedLocation().isPresent() ? column : null);
 			currentFrame.render();
 		}
 	}
@@ -453,7 +434,7 @@ public class MainController implements Initializable
 	{
 		LOGGER.trace("onVersionTextChanged() triggered");
 		if (currentFrame != null && event.getCode() == KeyCode.ENTER)
-			currentFrame.setVersion(versionTextField.getText());
+			currentFrame.setVersion((Version) versionTextField.getTextFormatter().getValue());
 	}
 	
 	@FXML
@@ -484,15 +465,38 @@ public class MainController implements Initializable
 		}
 	}
 	
+	@FXML
+	private void onClickSetColumn()
+	{
+		LOGGER.debug("onClickSetColumn() triggered");
+		if (currentFrame != null && currentFrame.selectedLocation.isPresent())
+		{
+			currentFrame.setColumn(currentFrame.selectedLocation.get(), columnTypeBox.getValue());
+			setInfoArea(currentFrame.getColumnAtCoords(currentFrame.selectedLocation.get()));
+			currentFrame.render();
+		}
+	}
+	
+	@FXML
+	private void onClickResetColumn()
+	{
+		LOGGER.debug("onClickResetColumn() triggered");
+		if (currentFrame != null && currentFrame.selectedLocation.isPresent())
+		{
+			currentFrame.setColumn(currentFrame.selectedLocation.get(), null);
+			setInfoArea(null);
+			// Better performance?
+			RBMKRenderHelper.eraseColumn(currentFrame.selectedLocation.get(), mainCanvas.getGraphicsContext2D(), currentFrame.getRenderer().zoom);
+			RBMKRenderHelper.drawSelectionRect(currentFrame.selectedLocation.get(), mainCanvas.getGraphicsContext2D(), currentFrame.getRenderer().zoom);
+		}
+	}
+	
 	public void setInfoArea(@Nullable InfoProviderNT infoProvider)
 	{
 		LOGGER.debug("Set infoTextArea with data provided by InfoProvider instance");
 		infoTextArea.getChildren().clear();
 		if (infoProvider != null)
 			infoTextArea.getChildren().addAll(infoProvider.getText());
-		
-//		infoTextArea.getChildren().add(new Text(infoProvider.asProperString()));
-//		infoTextArea.setText(infoProvider.asProperString());
 	}
 	
 	private static double clampZoom(double amount)

@@ -39,6 +39,7 @@
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
@@ -215,11 +216,7 @@
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                              </padding>
                                           </LineChart>
-                                          <ChoiceBox fx:id="graphSelectionBox" layoutX="14.0" layoutY="252.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="280.0">
-                                             <padding>
-                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                             </padding>
-                                          </ChoiceBox>
+                                          <ChoiceBox fx:id="graphSelectionBox" layoutX="14.0" layoutY="252.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="280.0" />
                                        </children>
                                     </AnchorPane>
                                 </content>
@@ -234,24 +231,18 @@
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
                         </TabPane>
-                        <VBox maxWidth="-Infinity" prefWidth="240.0" spacing="5.0">
-                           <padding>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </padding>
+                        <VBox maxWidth="-Infinity" prefWidth="240.0">
                            <HBox.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                              <Insets />
                            </HBox.margin>
                            <children>
                               <Accordion>
                                 <panes>
                                   <TitledPane fx:id="frameInfoPane" text="RBMK Info" wrapText="true">
                                     <content>
-                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                             <padding>
-                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                             </padding>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="110.0">
                                              <children>
-                                                <ScrollPane prefHeight="200.0" prefWidth="150.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <ScrollPane prefHeight="200.0" prefWidth="110.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                   <content>
                                                     <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="110.0">
                                                          <children>
@@ -280,12 +271,36 @@
                                                   </content>
                                                 </ScrollPane>
                                              </children>
+                                             <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                             </padding>
                                           </AnchorPane>
                                     </content>
                                   </TitledPane>
                                   <TitledPane fx:id="frameOptionsPane" text="Frame Options" wrapText="true">
                                     <content>
-                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <ScrollPane layoutX="-65.0" layoutY="-20.0" prefHeight="200.0" prefWidth="150.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                  <content>
+                                                    <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                         <children>
+                                                            <Label fx:id="setColumnLabel" text="Set Column" AnchorPane.bottomAnchor="200.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0" />
+                                                            <ChoiceBox fx:id="columnTypeBox" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="20.0" />
+                                                            <Button fx:id="setColumnButton" defaultButton="true" mnemonicParsing="false" onAction="#onClickSetColumn" text="+" textAlignment="CENTER" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0">
+                                                               <tooltip>
+                                                                  <Tooltip fx:id="setColumnButtonTooltip" text="(Re)sets the current column at the location" />
+                                                               </tooltip>
+                                                            </Button>
+                                                            <Button fx:id="resetColumnButton" mnemonicParsing="false" onAction="#onClickResetColumn" text="Reset Column" textAlignment="CENTER" AnchorPane.bottomAnchor="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="50.0" />
+                                                         </children>
+                                                      </AnchorPane>
+                                                  </content>
+                                                </ScrollPane>
+                                             </children>
+                                             <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                             </padding></AnchorPane>
                                     </content>
                                   </TitledPane>
                                   <TitledPane fx:id="columnOptionsPane" text="Column Options" wrapText="true">
@@ -299,10 +314,10 @@
                                              <children>
                                                 <ScrollPane prefHeight="200.0" prefWidth="150.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                   <content>
-                                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="110.0">
+                                                    <AnchorPane minHeight="0.0" minWidth="0.0">
                                                          <children>
                                                             <Label fx:id="zoomLabel" layoutX="14.0" layoutY="7.0" text="Zoom Level" AnchorPane.bottomAnchor="200.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0" />
-                                                            <TextField fx:id="zoomTextField" onKeyReleased="#onZoomLevelTextChanged" promptText="Zoom amount" text="100.0" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0" />
+                                                            <TextField fx:id="zoomTextField" onKeyReleased="#onZoomLevelTextChanged" prefWidth="75.0" promptText="Zoom amount" text="100.0" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0" />
                                                             <Label layoutX="80.0" layoutY="24.0" text="\%" textAlignment="CENTER" AnchorPane.bottomAnchor="180.0" AnchorPane.leftAnchor="95.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0" />
                                                          </children>
                                                       </AnchorPane>

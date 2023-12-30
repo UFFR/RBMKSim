@@ -2,7 +2,6 @@ package org.uffr.rbmksim.simulation.scolumns;
 
 import java.util.Arrays;
 
-import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
@@ -11,9 +10,9 @@ public class RBMKBlank extends RBMKSimColumnBase
 {
 	private static final long serialVersionUID = -9157288903978474500L;
 
-	public RBMKBlank(GridLocation location, RBMKSimulation simulation)
+	public RBMKBlank(GridLocation location)
 	{
-		super(location, simulation);
+		super(location);
 	}
 	
 	@Override

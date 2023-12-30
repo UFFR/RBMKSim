@@ -29,8 +29,6 @@ public class FileUtil
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
 	public static final ExtensionFilter BLUEPRINT_FILTER	= new ExtensionFilter("RBMK Blueprint File", Main.EXT_BPRINT),
 										SIMULATION_FILTER	= new ExtensionFilter("RBMK Simulation File", Main.EXT_RSIM);
-//	private static final byte[] BLUEPRINT_MAGIC_B	= {0x52, 0x42, 0x4D, 0x4B, 0x53, 0x69, 0x6D, 0x42},// RBMKSimB
-//								SIMULATION_MAGIC_B	= {0x52, 0x42, 0x4D, 0x4B, 0x53, 0x69, 0x6D, 0x53};// RBMKSimS
 	public static final long BLUEPRINT_MAGIC	= 0x52424D4B53696D42L,
 							 SIMULATION_MAGIC	= 0x52424D4B53696D53L;
 	public static final byte HEADER_SIZE = 15;
@@ -40,7 +38,7 @@ public class FileUtil
 		if (Files.exists(path))
 			return false;
 
-		LOGGER.debug("Exporting as blueprint to " + path);
+		LOGGER.info("Exporting as blueprint to " + path);
 		try (final OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.APPEND);
 				final ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream))
 		{
@@ -92,7 +90,7 @@ public class FileUtil
 		if (!Files.exists(path))
 			throw new NoSuchFileException("Supplied path does not exist!");
 		
-		LOGGER.debug("Importing as blueprint...");
+		LOGGER.info("Importing as blueprint...");
 		try (final InputStream inputStream = Files.newInputStream(path);
 				final ObjectInputStream objectInputStream = new ObjectInputStream(inputStream))
 		{

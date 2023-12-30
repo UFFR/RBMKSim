@@ -29,15 +29,13 @@ public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serial
 	private static RBMKFrame currentFrame;
 	public static final short MAX_WATER = 16000, MAX_STEAM = 16000, MAX_HEAT_DEFAULT = 1500;
 	
-	@Deprecated
-	protected transient RBMKFrame rbmkFrame;
 	protected final GridLocation location;
+	// Most columns only need to be rendered when necessary and others seldomly to begin with
 	protected boolean shouldRender = true;
-	public RBMKColumnBase(GridLocation location, RBMKFrame frame)
+	public RBMKColumnBase(GridLocation location)
 	{
 		LOGGER.trace("New RBMKColumnBase constructed");
 		this.location = location;
-		this.rbmkFrame = frame;
 	}
 	
 	/**
@@ -47,7 +45,7 @@ public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serial
 	 */
 	public RBMKColumnBase(RBMKColumnBase column, GridLocation location)
 	{
-		this(location, column.rbmkFrame);
+		this(location);
 		LOGGER.trace("RBMKColumnBase copy constructor called");
 	}
 	
@@ -64,13 +62,7 @@ public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serial
 	{
 		LOGGER.trace("Column rendering requested; self-type: {}", getColumnType());
 		RBMKRenderHelper.renderEdges(location, graphics, getRendererZoom());
-		RBMKRenderHelper.renderCell(location, graphics, getRendererZoom());
-	}
-	
-	public void setRbmkFrame(RBMKFrame rbmkFrame)
-	{
-		LOGGER.debug("Column RBMKFrame changed");
-		this.rbmkFrame = rbmkFrame;
+		RBMKRenderHelper.renderCenter(location, graphics, getRendererZoom());
 	}
 	
 	protected static SimulationConfig getConfig()
@@ -88,6 +80,7 @@ public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serial
 		return location;
 	}
 	
+	// For performance
 	public boolean shouldRender()
 	{
 		return shouldRender;

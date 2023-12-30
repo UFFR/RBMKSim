@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
 import org.uffr.rbmksim.simulation.Direction;
 import org.uffr.rbmksim.simulation.GridLocation;
@@ -23,9 +22,9 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 	protected transient final RBMKSimColumnBase[] heatCache = new RBMKSimColumnBase[4];
 	protected double heat;
 	protected short water, steam;// Change to regular int if causes issues
-	public RBMKSimColumnBase(GridLocation location, RBMKSimulation simulation)
+	public RBMKSimColumnBase(GridLocation location)
 	{
-		super(location, simulation);
+		super(location);
 	}
 	
 	public abstract ColumnDialogBase<? extends RBMKSimColumnBase> getMenu();
@@ -36,6 +35,7 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 		return MAX_HEAT_DEFAULT;
 	}
 	
+	@SuppressWarnings("static-method")
 	public double passiveCooling()
 	{
 		return getConfig().passiveCooling;
@@ -44,7 +44,7 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 	@Override
 	public void render(GraphicsContext graphics)
 	{
-		RBMKRenderHelper.genericRender(getColumnType(), location, graphics, getCurrentFrame().getRenderer().zoom);
+		RBMKRenderHelper.basicRender(getColumnType(), location, graphics, getCurrentFrame().getRenderer().zoom);
 	}
 	
 	@Override

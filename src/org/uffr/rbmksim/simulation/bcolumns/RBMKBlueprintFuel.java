@@ -3,12 +3,12 @@ package org.uffr.rbmksim.simulation.bcolumns;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.google.common.hash.PrimitiveSink;
-import org.uffr.rbmksim.main.RBMKFrame;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
 import org.uffr.rbmksim.simulation.scolumns.RBMKFuel;
+
+import com.google.common.hash.PrimitiveSink;
 
 public class RBMKBlueprintFuel extends RBMKBlueprintColumn
 {
@@ -20,9 +20,9 @@ public class RBMKBlueprintFuel extends RBMKBlueprintColumn
 		fuelData = Optional.ofNullable(column.getFuelRod().isPresent() ? column.getFuelRod().get().data : null);
 	}
 	
-	public RBMKBlueprintFuel(GridLocation location, RBMKFrame rbmkFrame, ColumnType columnType, boolean moderated, RBMKFuelData fuelData)
+	public RBMKBlueprintFuel(GridLocation location, ColumnType columnType, boolean moderated, RBMKFuelData fuelData)
 	{
-		super(location, rbmkFrame, columnType, moderated);
+		super(location, columnType, moderated);
 		this.fuelData = Optional.ofNullable(fuelData);
 	}
 	

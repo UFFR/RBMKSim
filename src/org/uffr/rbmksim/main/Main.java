@@ -2,10 +2,11 @@ package org.uffr.rbmksim.main;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.config.ProgramConfig;
-import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.uffrlib.misc.Version;
 
@@ -22,12 +23,11 @@ import javafx.stage.Stage;
 public class Main extends Application
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-	// Useful for tracking discrepancies between saved files and the currently running program.
-	private static final Version VERSION = new Version(0, 5, 0, "SNAPSHOT");
+	// Useful for tracking discrepancies between saved files and the currently running program. Doesn't track metadata due to how I calculate it though.
+	private static final Version VERSION = new Version(0, 5, 3, "SNAPSHOT");
 	// Basic strings reused in various places.
 	public static final String EXT_BPRINT = "rbmk",
-							   EXT_RSIM = "rsim",
-							   KEY;
+							   EXT_RSIM   = "rsim";
 	// Icon of the program.
 	public static final Image ICON_IMAGE = new Image(Main.class.getClassLoader().getResourceAsStream("resources/rad.png"));
 	
@@ -40,15 +40,6 @@ public class Main extends Application
 	// If the simulation is running, paused otherwise.
 //	private static boolean running = false;
 	
-	static
-	{
-		// TODO Probably deprecate this
-		final StringBuilder builder = new StringBuilder(150);
-		for (ColumnType type : ColumnType.values())
-			builder.append(type.symbol).append(": ").append(type.fullName).append(" Column\n");
-		KEY = builder.toString();
-	}
-	
 	public static void main(String[] args)
 	{
 		LOGGER.debug("Entry point begun, launching...");
@@ -59,6 +50,12 @@ public class Main extends Application
 	public void start(Stage primaryStage) throws Exception
 	{
 		LOGGER.info("Starting application...");
+		Thread.setDefaultUncaughtExceptionHandler((t, e) ->
+		{
+			LOGGER.warn("Uncaught exception in program in {}", t);
+			LOGGER.warn("Stack trace:", e);
+			openErrorDialog(e);
+		});
 		stage = primaryStage;
 		final Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("resources/main_window.fxml"));
 		primaryStage.setTitle(I18n.resolve("app.title"));
@@ -90,7 +87,7 @@ public class Main extends Application
 		return runner.getFrame();
 	}
 	
-	public static void setFrame(RBMKFrame frame)
+	public static void setFrame(@Nullable RBMKFrame frame)
 	{
 		runner.setFrame(frame);
 	}
@@ -128,7 +125,7 @@ public class Main extends Application
 		alert.show();
 	}
 	
-	public static void openErrorDialog(Exception e)
+	public static void openErrorDialog(Throwable e)
 	{
 		LOGGER.debug("Main.openErrorDialog() triggered");
 		openDialog(I18n.resolve("dialog.error.title"), I18n.resolve("dialog.error.header"), e.toString(), AlertType.ERROR);

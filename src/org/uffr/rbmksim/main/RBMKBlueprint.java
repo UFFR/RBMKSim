@@ -6,9 +6,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintBoiler;
+import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintColumn;
 import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintFuel;
 import org.uffr.rbmksim.simulation.scolumns.RBMKBoiler;
 import org.uffr.rbmksim.simulation.scolumns.RBMKFuel;
@@ -43,6 +45,18 @@ public class RBMKBlueprint extends RBMKFrame
 			convertColumns();
 		else if (!(frame instanceof RBMKBlueprint))
 			throw new IllegalArgumentException("Frame is of unknown type: " + frame.getClass());
+	}
+	
+	@Override
+	protected RBMKColumnBase newOfType(GridLocation location, ColumnType type)
+	{
+		// Experimenting with new switches
+		switch (type)
+		{
+			default				-> {return new RBMKBlueprintColumn(location, type, false);}
+			case FUEL, FUEL_SIM -> {return new RBMKBlueprintFuel(location, type, false, null);}
+			case BOILER			-> {return new RBMKBlueprintBoiler(location, type);}
+		}
 	}
 	
 	@Override

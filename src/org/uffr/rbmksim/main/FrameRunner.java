@@ -10,10 +10,6 @@ public class FrameRunner implements Runnable
 	private static final Logger LOGGER = LoggerFactory.getLogger(FrameRunner.class);
 	private Optional<RBMKFrame> frame = Optional.empty();
 	private boolean active;
-	/*public FrameRunner(RBMKFrame frame)
-	{
-		this.frame = Optional.ofNullable(frame);
-	}*/
 	
 	public FrameRunner()
 	{

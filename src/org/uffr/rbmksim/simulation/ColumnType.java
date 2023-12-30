@@ -1,28 +1,34 @@
 package org.uffr.rbmksim.simulation;
 
+import org.uffr.rbmksim.util.I18n;
+
 public enum ColumnType
 {
-	BLANK(false, '#', "Structure"),
-	FUEL(true, 'F', "Fuel"),
-	FUEL_SIM(true, 'F', "ReaSim Fuel"),
-	CONTROL(true, 'C', "Control Rod"),
-	CONTROL_AUTO(true, 'C', "Automatic Control Rod"),
-	BOILER(true, 'B', "Boiler"),
-	MODERATOR(false, 'M', "Graphite Moderator"),
-	ABSORBER(false, 'A', "Boron Absorber"),
-	REFLECTOR(false, 'R', "Tungsten Carbide Reflector"),
-	OUTGASSER(true, 'O', "Irradiator"),
-	BREEDER(true, 'I', "Breeder"),
-	STORAGE(true, 'S', "Storage"),
-	COOLER(true, 'V', "Cooler"),
-	HEATEX(false, 'H', "Heat Exchanger");
+	BLANK(false, "blank"),
+	FUEL(true, "fuel"),
+	FUEL_SIM(true, "fuelSim"),
+	CONTROL(true, "controlManual"),
+	CONTROL_AUTO(true, "controlAuto"),
+	BOILER(true, "boiler"),
+	MODERATOR(false, "moderator"),
+	ABSORBER(false, "absorber"),
+	REFLECTOR(false, "reflector"),
+	OUTGASSER(true, "irradiator"),
+	BREEDER(true, "breeder"),
+	STORAGE(true, "storage"),
+	COOLER(true, "cooler"),
+	HEATEX(false, "heatEx");
 	public final boolean hasGUI;
-	public final char symbol;
-	public final String fullName;
-	private ColumnType(boolean hasGUI, char symbol, String fullName)
+	public final String uloc;
+	private ColumnType(boolean hasGUI, String uloc)
 	{
 		this.hasGUI = hasGUI;
-		this.symbol = symbol;
-		this.fullName = fullName;
+		this.uloc = "column.type." + uloc;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return I18n.resolve(uloc);
 	}
 }

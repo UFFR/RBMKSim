@@ -10,9 +10,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.config.SimulationConfig;
+import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
@@ -20,6 +23,7 @@ import org.uffr.uffrlib.collections.matrix.ExpandingArrayMatrix;
 import org.uffr.uffrlib.collections.matrix.Matrices;
 import org.uffr.uffrlib.collections.matrix.Matrix;
 import org.uffr.uffrlib.hashing.Hashable;
+import org.uffr.uffrlib.misc.Version;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.PrimitiveSink;
@@ -57,12 +61,15 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	protected transient Canvas canvas;
 	// Render helper
 	protected transient RBMKRenderHelper renderer;
-	// Basic information about the RBMK: the design's name, its creator, and the version. All may be empty.
-	protected String name, creatorName, version;
+	// Basic information about the RBMK: the design's name, its creator, and the version.
+	protected String name, creatorName;
+	protected Version version;
 	protected LocalDate date;
 	// Some quick tracking values, a timer for delays, and a tick counter.
 	protected int rows = DEFAULT_SIZE, columns = DEFAULT_SIZE, ticks;
+	// Timer for adding nodes to the graph, for performance
 	protected transient int graphTimer;
+	// Selected column
 	protected transient Optional<GridLocation> selectedLocation = Optional.empty();
 	
 	public RBMKFrame(Canvas canvas)
@@ -74,12 +81,12 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		grid = new ExpandingArrayMatrix<>(DEFAULT_SIZE, DEFAULT_SIZE);
 		registeredLocations = new HashSet<>(DEFAULT_SIZE * DEFAULT_SIZE);
 		date = LocalDate.now();
-		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.totalCells());
+		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.getRows(), grid.getCols());
 		
 		// Defaults
 		name = "Untitled" + creationCount++;
 		creatorName = Main.config.username;
-		version = "1.0.0";
+		version = new Version(1);
 		date = LocalDate.now();
 	}
 	
@@ -102,9 +109,11 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		this.date = frame.date;
 		// Probably shouldn't copy ticks if it's a new frame
 		
-		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.totalCells());
+		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.getRows(), grid.getCols());
 	}
 	
+
+	protected abstract RBMKColumnBase newOfType(GridLocation location, ColumnType type);
 	/**
 	 * Checks the matrix for columns that appear to be bugged or severely outdated. Implementation may be different between subclasses.  
 	 * @param discrepancies A tracking list of all detected discrepancies and whatever action was taken. Compiled into a log and displayed to the user.
@@ -124,6 +133,24 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 //	public abstract InternalImage renderToImage();
 	
 	/**
+	 * Sets the grid location to a column of type
+	 * @param location The location to set
+	 * @param type The column type to create or null to remove the column
+	 * @return True, if successful and the grid changed or false if it couldn't be
+	 */
+	public boolean setColumn(GridLocation location, @Nullable ColumnType type)
+	{
+		LOGGER.debug("Setting {} type column at {}", type, location);
+		if (invalidCoords(location))
+			return false;
+		if (type == null)
+			removeColumn(location);
+		else
+			addColumn(newOfType(location, type));
+		return true;
+	}
+	
+	/**
 	 * The render helper associated with this frame.
 	 * @return A render helper class.
 	 */
@@ -131,7 +158,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	{
 		LOGGER.trace("RBMKFrame.getRenderer() called...");
 		// In case it was deserialized
-		return renderer == null ? renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.totalCells()) : renderer;
+		return renderer == null ? renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.getRows(), grid.getCols()) : renderer;
 	}
 	
 	/**
@@ -149,7 +176,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void render()
 	{
-		LOGGER.debug("RBMKFrame.render() called...");
+		LOGGER.trace("RBMKFrame.render() called...");
 		grid.stream().filter(Objects::nonNull).filter(RBMKColumnBase::shouldRender).forEach(getRenderer()::renderColumn);
 //		for (RBMKColumnBase col : grid)
 //			if (col != null && col.shouldRender())
@@ -191,13 +218,13 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		return creatorName;
 	}
 	
-	public void setVersion(String version)
+	public void setVersion(Version version)
 	{
 		LOGGER.debug("RBMKFrame version changed to: {}", version);
 		this.version = version;
 	}
 	
-	public String getVersion()
+	public Version getVersion()
 	{
 		return version;
 	}
@@ -225,7 +252,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public boolean addColumn(RBMKColumnBase column)
 	{
-		LOGGER.debug("Attempting to add column at: {}", column.getLocation());
+		LOGGER.debug("Attempting to add {} at: {}", column.getClass(), column.getLocation());
 		if (!validCoords(column.getLocation()))
 			return false;
 		LOGGER.trace("Column was accepted");
@@ -450,13 +477,14 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setSelectedLocation(Optional<GridLocation> selectedLocation)
 	{
-		renderer.selectedLocation = this.selectedLocation = this.selectedLocation.equals(selectedLocation) ? Optional.empty() : selectedLocation;
+		renderer.selectedLocation = this.selectedLocation = this.selectedLocation.equals(selectedLocation) || (selectedLocation.isPresent() && invalidCoords(selectedLocation.get())) ? Optional.empty() : selectedLocation;
 	}
 	
 	@Override
 	public void funnelInto(PrimitiveSink sink)
 	{
-		sink.putInt(rows).putInt(columns).putInt(ticks).putString(name, UTF_8).putString(creatorName, UTF_8).putString(version, UTF_8);
+		sink.putInt(rows).putInt(columns).putInt(ticks).putString(name, UTF_8).putString(creatorName, UTF_8);
+		version.funnelInto(sink);
 		config.funnelInto(sink);
 		registeredLocations.forEach(l -> {grid.get(l.getX(), l.getY()).funnelInto(sink); GridLocation.FUNNEL.funnel(l, sink);});
 	}
