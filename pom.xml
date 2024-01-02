@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.uffr.rbmksim</groupId>
   <artifactId>rbmksim</artifactId>
-  <version>0.5.3-SNAPSHOT</version>
+  <version>0.5.4-SNAPSHOT</version>
   <name>RBMKSim</name>
   <description>RBMK designer and simulator for the Minecraft mod: Hbm's Nuclear Tech Mod</description>
   <properties>
