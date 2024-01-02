@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.main;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,7 +24,9 @@ import javafx.scene.canvas.Canvas;
 
 public class RBMKSimulation extends RBMKFrame
 {
+	@Serial
 	private static final long serialVersionUID = 5530885107200613696L;
+	// Delay between each tick in milliseconds so there are 20 ticks per second by default
 	public static final byte TICK = 50;
 	private boolean meltedDown = false, running = false;
 		
@@ -101,13 +104,13 @@ public class RBMKSimulation extends RBMKFrame
 		for (int i = 0, matrixSize = grid.totalCells(); i < matrixSize; i++)
 		{
 			final GridLocation loc = new GridLocation(i / grid.getCols(), i % grid.getCols());
-			final RBMKSimColumnBase column = (RBMKSimColumnBase) grid.get(loc.getX(), loc.getX());
+			final RBMKSimColumnBase column = (RBMKSimColumnBase) grid.get(loc.x(), loc.x());
 			if (!loc.equals(column.getLocation()))
 			{
 				discrepancies.add("Column at " + loc + " has an inconsistent with grid location, internally claims to be at " + column.getLocation() + ", possible corruption?");
 				if (repair)
 				{
-					grid.remove(loc.getX(), loc.getY());
+					grid.remove(loc.x(), loc.y());
 					continue;
 				}
 			}
@@ -116,7 +119,7 @@ public class RBMKSimulation extends RBMKFrame
 				discrepancies.add("Column at " + loc + " is not within the bounds of the simulation.");
 				if (repair)
 				{
-					grid.remove(loc.getX(), loc.getY());
+					grid.remove(loc.x(), loc.y());
 					continue;
 				}
 			}
@@ -158,10 +161,9 @@ public class RBMKSimulation extends RBMKFrame
 					}
 				}
 			}
-			if (column instanceof RBMKControl)
+			if (column instanceof RBMKControl control)
 			{
-				final RBMKControl control = (RBMKControl) column;
-				if (control.getLevel() < 0 || control.getLevel() > 1)
+                if (control.getLevel() < 0 || control.getLevel() > 1)
 				{
 					discrepancies.add("Column at " + loc + " is control column and its level is out of bounds (" + control.getLevel() + "). " + (repair ? "Repair will set to the closest bound.": "Not repairing, skipping column."));
 					if (repair)
@@ -203,23 +205,27 @@ public class RBMKSimulation extends RBMKFrame
 			// Should not be any other kind, but check anyway.
 			if (column instanceof RBMKBlueprintColumn)
 			{
-				final GridLocation location = column.getLocation();
-				final RBMKSimColumnBase newColumn;
-				switch (column.getColumnType())
-				{
-					case ABSORBER: newColumn = new RBMKAbsorber(location); break;
-					case BLANK: newColumn = new RBMKBlank(location); break;
-					case BOILER: newColumn = new RBMKBoiler(location); break;
-					case BREEDER:
-					case OUTGASSER: newColumn = new RBMKBlank(location); break; // TODO Setup breeder column type
-					default: throw new IllegalStateException("Encountered unknown column type while converting!");
-				}
+				final RBMKSimColumnBase newColumn = getConvertedColumn(column);
 				grid.set(col, row, newColumn);
 			} else
-				throw new IllegalStateException("Encounted column of illegal type when converting!");
+				throw new IllegalStateException("Encountered column of illegal type when converting!");
 		}
 	}
-	
+
+	private static RBMKSimColumnBase getConvertedColumn(RBMKColumnBase column)
+	{
+		final GridLocation location = column.getLocation();
+		final RBMKSimColumnBase newColumn = switch (column.getColumnType())
+		{
+			case ABSORBER -> new RBMKAbsorber(location);
+			case BLANK -> new RBMKBlank(location);
+			case BOILER -> new RBMKBoiler(location);
+			case BREEDER, OUTGASSER -> new RBMKBlank(location); // TODO Setup breeder column type
+			default -> throw new IllegalStateException("Encountered unknown column type while converting!");
+		};
+		return newColumn;
+	}
+
 	public boolean isRunning()
 	{
 		return running;
@@ -256,22 +262,10 @@ public class RBMKSimulation extends RBMKFrame
 	@Override
 	public boolean validCoords(GridLocation loc)
 	{
-		return (loc.getX() <= columns && loc.getY() <= rows) && (loc.getX() >= 0 && loc.getY() >= 0);
+		return (loc.x() <= columns && loc.y() <= rows) && (loc.x() >= 0 && loc.y() >= 0);
 	}
 
-	@Override
-	public int getRows()
-	{
-		return rows;
-	}
-	
-	@Override
-	public int getColumns()
-	{
-		return columns;
-	}
-	
-	@Override
+    @Override
 	public void setRows(int rows)
 	{
 		final boolean shrank = getRows() > rows;
@@ -338,10 +332,9 @@ public class RBMKSimulation extends RBMKFrame
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RBMKSimulation))
+		if (!(obj instanceof RBMKSimulation other))
 			return false;
-		final RBMKSimulation other = (RBMKSimulation) obj;
-		return columns == other.columns && Objects.equals(config, other.config) && Objects.equals(grid, other.grid)
+        return columns == other.columns && Objects.equals(config, other.config) && Objects.equals(grid, other.grid)
 				&& meltedDown == other.meltedDown && rows == other.rows;
 	}
 	

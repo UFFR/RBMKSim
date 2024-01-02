@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.bcolumns;
 
+import java.io.Serial;
 import java.util.Objects;
 
 import org.uffr.rbmksim.simulation.ColumnType;
@@ -12,6 +13,7 @@ import com.google.common.hash.PrimitiveSink;
 
 public class RBMKBlueprintBoiler extends RBMKBlueprintColumn
 {
+	@Serial
 	private static final long serialVersionUID = -4867177641210935981L;
 	private final FluidTank steamTank, waterTank;
 	public RBMKBlueprintBoiler(RBMKBoiler boiler)
@@ -60,10 +62,9 @@ public class RBMKBlueprintBoiler extends RBMKBlueprintColumn
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof RBMKBlueprintBoiler))
+		if (!(obj instanceof RBMKBlueprintBoiler other))
 			return false;
-		final RBMKBlueprintBoiler other = (RBMKBlueprintBoiler) obj;
-		return Objects.equals(steamTank, other.steamTank) && Objects.equals(waterTank, other.waterTank);
+        return Objects.equals(steamTank, other.steamTank) && Objects.equals(waterTank, other.waterTank);
 	}
 
 	@Override

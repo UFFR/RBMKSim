@@ -1,8 +1,10 @@
 package org.uffr.rbmksim.config;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.uffr.rbmksim.main.Main.*;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,13 +33,11 @@ import com.google.common.hash.PrimitiveSink;
 
 public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializable, Cloneable, ConfigNT
 {
+	@Serial
 	private static final long serialVersionUID = 2581161401492824888L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramConfig.class);
 	/// Defaults ///
 	public static final Locale LOCALE = Locale.getDefault();
-	public static final Path
-					USER_PATH = Path.of(System.getProperty("user.home")),// TODO Change if it causes the program to explode
-					CONFIG_PATH = System.getProperty("os.name").contains("Linux") ? Path.of(System.getProperty("user.home"), ".config", "rbmksim") : Path.of("%APPDATA%", "rbmksim");// TODO Ditto
 	public static final String USERNAME = System.getProperty("user.name");
 	public static final byte TICK_DELAY = 0;
 	
@@ -216,10 +216,9 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof ProgramConfig))
+		if (!(obj instanceof ProgramConfig other))
 			return false;
-		final ProgramConfig other = (ProgramConfig) obj;
-		return Objects.equals(configPath, other.configPath) && Objects.equals(locale, other.locale)
+        return Objects.equals(configPath, other.configPath) && Objects.equals(locale, other.locale)
 				&& tickDelay == other.tickDelay && Objects.equals(userPath, other.userPath)
 				&& Objects.equals(username, other.username);
 	}

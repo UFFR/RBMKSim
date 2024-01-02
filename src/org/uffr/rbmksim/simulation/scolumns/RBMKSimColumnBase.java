@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.scolumns;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +18,7 @@ import javafx.scene.text.Text;
 
 public abstract class RBMKSimColumnBase extends RBMKColumnBase
 {
+	@Serial
 	private static final long serialVersionUID = 3500879413794578688L;
 	
 	protected transient final RBMKSimColumnBase[] heatCache = new RBMKSimColumnBase[4];
@@ -118,8 +120,8 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 				column.steam = (short) tSteam;
 			}
 			
-			water += rWater;
-			steam += rSteam;
+			water += (short) rWater;
+			steam += (short) rSteam;
 		}
 	}
 	
@@ -189,10 +191,9 @@ public abstract class RBMKSimColumnBase extends RBMKColumnBase
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RBMKSimColumnBase))
+		if (!(obj instanceof RBMKSimColumnBase other))
 			return false;
-		final RBMKSimColumnBase other = (RBMKSimColumnBase) obj;
-		return Double.doubleToLongBits(heat) == Double.doubleToLongBits(other.heat)
+        return Double.doubleToLongBits(heat) == Double.doubleToLongBits(other.heat)
 				&& Objects.equals(location, other.location) && steam == other.steam && water == other.water;
 	}
 	

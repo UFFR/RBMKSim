@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.main;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +19,8 @@ import org.uffr.rbmksim.simulation.scolumns.RBMKSimColumnBase;
 
 import javafx.scene.canvas.Canvas;
 
+import javax.annotation.Nonnull;
+
 /**
  * RBMK frame only for designing. It only contains the bare minimum of information for that role.
  * <br>
@@ -27,6 +30,7 @@ import javafx.scene.canvas.Canvas;
  */
 public class RBMKBlueprint extends RBMKFrame
 {
+	@Serial
 	private static final long serialVersionUID = 2357399660826941002L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKBlueprint.class);
 
@@ -36,7 +40,7 @@ public class RBMKBlueprint extends RBMKFrame
 		LOGGER.debug("Generic RBMKBlueprint constructed");
 	}
 	
-	public RBMKBlueprint(RBMKFrame frame)
+	public RBMKBlueprint(@Nonnull RBMKFrame frame)
 	{
 		super(frame);
 		LOGGER.debug("RBMKBlueprint copy constructor called");
@@ -64,10 +68,11 @@ public class RBMKBlueprint extends RBMKFrame
 	{
 		LOGGER.debug("Checking for errors...");
 		String message;
-		for (RBMKColumnBase column : grid)
+//		for (RBMKColumnBase column : grid)
+		for (GridLocation loc : registeredLocations)
 		{
-			final GridLocation loc = column.getLocation();
-//			final RBMKColumnBase column = grid.get(loc.getX(), loc.getX());
+//			final GridLocation loc = column.getLocation();
+			final RBMKColumnBase column = getColumnAtCoords(loc);
 			if (!loc.equals(column.getLocation()))
 			{
 				message = "Column at " + loc + " has an inconsistent with grid location, internally claims to be at " + column.getLocation() + ", possible corruption?";
@@ -76,7 +81,7 @@ public class RBMKBlueprint extends RBMKFrame
 				if (repair)
 				{
 					LOGGER.trace("Fixing...");
-					grid.remove(loc.getX(), loc.getX());
+					grid.remove(loc.x(), loc.x());
 					registeredLocations.remove(loc);
 					continue;
 				}
@@ -89,7 +94,7 @@ public class RBMKBlueprint extends RBMKFrame
 				if (repair)
 				{
 					LOGGER.trace("Fixing...");
-					grid.remove(loc.getX(), loc.getX());
+					grid.remove(loc.x(), loc.x());
 					registeredLocations.remove(loc);
 					continue;
 				}
@@ -146,10 +151,9 @@ public class RBMKBlueprint extends RBMKFrame
 			if (column == null)
 				continue;
 			// Should not be any other kind, but check anyway.
-			if (column instanceof RBMKSimColumnBase)
+			if (column instanceof RBMKSimColumnBase simColumn)
 			{
-				final RBMKSimColumnBase simColumn = (RBMKSimColumnBase) column;
-				switch (simColumn.getColumnType())
+                switch (simColumn.getColumnType())
 				{
 					case FUEL:
 					case FUEL_SIM:
@@ -163,7 +167,7 @@ public class RBMKBlueprint extends RBMKFrame
 						break;
 				}
 			} else
-				throw new IllegalStateException("Encounted column of illegal type when converting!");
+				throw new IllegalStateException("Encountered column of illegal type when converting!");
 		}
 	}
 	
@@ -178,10 +182,8 @@ public class RBMKBlueprint extends RBMKFrame
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RBMKBlueprint))
-			return false;
-		return true;
-	}
+        return obj instanceof RBMKBlueprint;
+    }
 
 	@Override
 	public String toString()
@@ -190,17 +192,17 @@ public class RBMKBlueprint extends RBMKFrame
 		final StringBuilder builder = new StringBuilder();
 		builder.append("RBMKBlueprint [config=").append(config).append(", grid=").append(grid)
 				.append(", registeredLocations=")
-				.append(registeredLocations != null ? toString(registeredLocations, maxLen) : null).append(", rows=")
+				.append(registeredLocations != null ? toString(registeredLocations) : null).append(", rows=")
 				.append(rows).append(", columns=").append(columns).append(']');
 		return builder.toString();
 	}
 	
-	private static String toString(Collection<?> collection, int maxLen)
+	private static String toString(Collection<?> collection)
 	{
 		final StringBuilder builder = new StringBuilder();
 		builder.append('[');
 		int i = 0;
-		for (Iterator<?> iterator = collection.iterator(); iterator.hasNext() && i < maxLen; i++)
+		for (Iterator<?> iterator = collection.iterator(); iterator.hasNext() && i < 10; i++)
 		{
 			if (i > 0)
 				builder.append(", ");

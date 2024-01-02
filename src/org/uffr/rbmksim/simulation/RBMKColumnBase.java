@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import javafx.scene.text.Text;
 
 public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serializable
 {
+	@Serial
 	private static final long serialVersionUID = -4281135799096443502L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKColumnBase.class);
 	private static RBMKFrame currentFrame;
@@ -114,10 +116,9 @@ public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serial
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RBMKColumnBase))
+		if (!(obj instanceof RBMKColumnBase other))
 			return false;
-		final RBMKColumnBase other = (RBMKColumnBase) obj;
-		return Objects.equals(location, other.location) && shouldRender == other.shouldRender;
+        return Objects.equals(location, other.location) && shouldRender == other.shouldRender;
 	}
 
 	protected static RBMKFrame getCurrentFrame()

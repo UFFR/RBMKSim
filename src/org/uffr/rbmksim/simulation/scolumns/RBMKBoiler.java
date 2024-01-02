@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.scolumns;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +20,7 @@ import javafx.scene.text.Text;
 
 public class RBMKBoiler extends RBMKSimColumnBase
 {
+	@Serial
 	private static final long serialVersionUID = -7777582161264166919L;
 	protected final FluidTank waterTank = new FluidTank(FluidType.WATER, 10000);
 	protected final FluidTank steamTank = new FluidTank(FluidType.STEAM, 1000000);
@@ -55,14 +57,14 @@ public class RBMKBoiler extends RBMKSimColumnBase
 
 	private static short getFactorFromSteam(FluidType type)
 	{
-		switch (type)
-		{
-			case STEAM: return 1;
-			case DENSE_STEAM: return 10;
-			case SUPER_DENSE_STEAM: return 100;
-			case ULTRA_DENSE_STEAM: return 1000;
-			default: return 0;
-		}
+        return switch (type)
+        {
+            case STEAM -> 1;
+            case DENSE_STEAM -> 10;
+            case SUPER_DENSE_STEAM -> 100;
+            case ULTRA_DENSE_STEAM -> 1000;
+            default -> 0;
+        };
 	}
 	
 	@Override
@@ -100,9 +102,9 @@ public class RBMKBoiler extends RBMKSimColumnBase
 		super.render(context);
 		// TODO Confirm if renders properly
 		context.setFill(Color.BLUE);
-		context.fillRect(location.getX() + 1, location.getY() + 1, 5, (int) (12 * ((float) waterTank.getFill() / (float) waterTank.maxFill)));
+		context.fillRect(location.x() + 1, location.y() + 1, 5, (int) (12 * ((float) waterTank.getFill() / (float) waterTank.maxFill)));
 		context.setFill(Color.WHITE);
-		context.fillRect(location.getX() + 12, location.getY() + 1, 5, (int) (12 * ((float) steamTank.getFill() / (float) steamTank.maxFill)));
+		context.fillRect(location.x() + 12, location.y() + 1, 5, (int) (12 * ((float) steamTank.getFill() / (float) steamTank.maxFill)));
 	}
 	
 	@Override
@@ -121,14 +123,14 @@ public class RBMKBoiler extends RBMKSimColumnBase
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof RBMKBoiler))
+		if (!(obj instanceof RBMKBoiler other))
 			return false;
-		final RBMKBoiler other = (RBMKBoiler) obj;
-		return Objects.equals(steamTank, other.steamTank) && Objects.equals(waterTank, other.waterTank);
+        return Objects.equals(steamTank, other.steamTank) && Objects.equals(waterTank, other.waterTank);
 	}
 	
 	public static class FluidTank implements Serializable
 	{
+		@Serial
 		private static final long serialVersionUID = 599853533652632531L;
 		public static final Funnel<FluidTank> FUNNEL = (tank, sink) ->
 		{
@@ -185,18 +187,15 @@ public class RBMKBoiler extends RBMKSimColumnBase
 		{
 			if (this == obj)
 				return true;
-			if (!(obj instanceof FluidTank))
+			if (!(obj instanceof FluidTank other))
 				return false;
-			final FluidTank other = (FluidTank) obj;
-			return fill == other.fill && fluidType == other.fluidType && maxFill == other.maxFill;
+            return fill == other.fill && fluidType == other.fluidType && maxFill == other.maxFill;
 		}
 		@Override
 		public String toString()
 		{
-			final StringBuilder builder = new StringBuilder();
-			builder.append("FluidTank [fill=").append(fill).append(", maxFill=").append(maxFill).append(", fluidType=")
-					.append(fluidType).append(']');
-			return builder.toString();
+            return "FluidTank [fill=" + fill + ", maxFill=" + maxFill + ", fluidType=" +
+                    fluidType + ']';
 		}
 
 	}
@@ -204,11 +203,9 @@ public class RBMKBoiler extends RBMKSimColumnBase
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKBoiler [heat=").append(heat).append(", water=").append(water).append(", steam=")
-				.append(steam).append(", heatCache=").append(Arrays.toString(heatCache)).append(", location=")
-				.append(location).append(", waterTank=").append(waterTank).append(", steamTank=")
-				.append(steamTank).append(']');
-		return builder.toString();
+        return "RBMKBoiler [heat=" + heat + ", water=" + water + ", steam=" +
+                steam + ", heatCache=" + Arrays.toString(heatCache) + ", location=" +
+                location + ", waterTank=" + waterTank + ", steamTank=" +
+                steamTank + ']';
 	}
 }

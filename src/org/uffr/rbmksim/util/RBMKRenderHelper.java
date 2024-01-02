@@ -259,18 +259,18 @@ public class RBMKRenderHelper
 	{
 		LOGGER.trace("Drawing line at {}, starting at offset [x={}, y={}], ending at offset [x={}, y={}], and with zoom {}", location, x1, y1, x2, y2, zoom);
 		graphics.strokeLine(
-				(location.getX() * CELL_SIZE + x1 + 1) * zoom,
-				(location.getY() * CELL_SIZE + y1 + 1) * zoom,
-				(location.getX() * CELL_SIZE + x2 + 1) * zoom,
-				(location.getY() * CELL_SIZE + y2 + 1) * zoom);
+				(location.x() * CELL_SIZE + x1 + 1) * zoom,
+				(location.y() * CELL_SIZE + y1 + 1) * zoom,
+				(location.x() * CELL_SIZE + x2 + 1) * zoom,
+				(location.y() * CELL_SIZE + y2 + 1) * zoom);
 	}
 	
 	public static void drawRect(GridLocation location, double x, double y, double w, double h, GraphicsContext graphics, double zoom)
 	{
 		LOGGER.trace("Drawing rectangle at {}, with offset [x={}, y={}], width {} and height {}, with zoom {}", location, x, y, w, h, zoom);
 		graphics.fillRect(
-				(location.getX() * CELL_SIZE + x) * zoom,
-				(location.getY() * CELL_SIZE + y) * zoom,
+				(location.x() * CELL_SIZE + x) * zoom,
+				(location.y() * CELL_SIZE + y) * zoom,
 				w * zoom,
 				h * zoom);
 	}
@@ -280,8 +280,8 @@ public class RBMKRenderHelper
 		graphics.setLineWidth(LINE_WIDTH * 2);
 		graphics.setStroke(Color.WHITE);
 		graphics.strokeRect(
-				location.getX() * CELL_SIZE * zoom,
-				location.getY() * CELL_SIZE * zoom,
+				location.x() * CELL_SIZE * zoom,
+				location.y() * CELL_SIZE * zoom,
 				CELL_SIZE * zoom,
 				CELL_SIZE * zoom);
 	}

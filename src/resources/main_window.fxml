@@ -152,14 +152,15 @@
             </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-                  <MenuItem mnemonicParsing="false" onAction="#onClickHelp" text="Help">
+                  <MenuItem fx:id="helpHelpMenuItem" mnemonicParsing="false" onAction="#onClickHelp" text="Help">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="F1" control="UP" meta="UP" shift="UP" shortcut="ANY" />
                      </accelerator>
                   </MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#onClickCredits" text="Credits" />
-            <MenuItem mnemonicParsing="false" onAction="#onClickAbout" text="About RBMK Simulator" />
+                  <MenuItem fx:id="helpCreditsMenuItem" mnemonicParsing="false" onAction="#onClickCredits" text="Credits" />
+                  <MenuItem fx:id="helpLicenseMenuItem" mnemonicParsing="false" onAction="#onClickLicense" text="License" />
+            <MenuItem fx:id="helpAboutMenuItem" mnemonicParsing="false" onAction="#onClickAbout" text="About RBMK Simulator" />
           </items>
         </Menu>
       </menus>

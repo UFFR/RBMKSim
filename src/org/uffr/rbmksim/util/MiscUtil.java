@@ -1,15 +1,29 @@
 package org.uffr.rbmksim.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.uffr.rbmksim.main.Main;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
+
+import com.google.common.collect.ImmutableList;
 
 public class MiscUtil
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(MiscUtil.class);
 	@Deprecated
 	public static StringExtractor<RBMKFuelData> fuelDataExtractor(RBMKFuelData data)
 	{
@@ -111,6 +125,23 @@ public class MiscUtil
 			logger.accept("Using fallback value...");
 			return fallback;
 		}
+	}
+	
+	public static Path extractResource(String innerPath, String suffix) throws IOException
+	{
+		LOGGER.trace("Extracting resource [{}]...", innerPath);
+		try (final InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(innerPath))
+		{
+			final Path externalPath = Files.createTempFile("rbmksim-", suffix);
+			Files.copy(inputStream, externalPath, StandardCopyOption.REPLACE_EXISTING);
+			return externalPath;
+		}
+	}
+	
+	@CheckForNull
+	public static Path fileToPathOrNull(@Nullable File file)
+	{
+		return file == null ? null : file.toPath();
 	}
 	
 }

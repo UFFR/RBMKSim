@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.scolumns;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import javafx.scene.text.Text;
 
 public class RBMKFuel extends RBMKFluxReceiverBase
 {
+	@Serial
 	private static final long serialVersionUID = -416153160444730096L;
 
 	protected static NeutronType stream;
@@ -39,7 +41,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	public RBMKFuel(GridLocation location, boolean moderated, Optional<RBMKFuelData> data)
 	{
 		this(location, moderated);
-		fuelRod = Optional.ofNullable(data.isPresent() ? new RBMKFuelRod(data.get()) : null);
+		fuelRod = data.map(RBMKFuelRod::new);
 	}
 	
 	@Override
@@ -103,13 +105,13 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	
 	private double fluxFromType(NeutronType type)
 	{
-		switch (type)
-		{
-			case ANY: return fluxFast + fluxSlow;
-			case FAST: return fluxFast + fluxSlow * 0.3;
-			case SLOW: return fluxFast * 0.5 + fluxSlow;
-			default: return 0;
-		}
+        return switch (type)
+        {
+            case ANY -> fluxFast + fluxSlow;
+            case FAST -> fluxFast + fluxSlow * 0.3;
+            case SLOW -> fluxFast * 0.5 + fluxSlow;
+            default -> 0;
+        };
 	}
 	
 	protected void spreadFlux(NeutronType type, double flux)
@@ -134,25 +136,22 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 		if (getCurrentFrame().validCoords(loc))
 		{
 			final RBMKSimColumnBase columnBase = (RBMKSimColumnBase) getCurrentFrame().getColumnAtCoords(loc);
-			if (columnBase instanceof RBMKFuel)
+			if (columnBase instanceof RBMKFuel fuel)
 			{
-				final RBMKFuel fuel = (RBMKFuel) columnBase;
-				if (fuel.getFuelRod().isPresent())
+                if (fuel.getFuelRod().isPresent())
 				{
 					fuel.receiveFlux(stream, flux);
 					return 0;
 				}
 			}
-			if (columnBase instanceof RBMKFluxReceiverBase)
+			if (columnBase instanceof RBMKFluxReceiverBase receiver)
 			{
-				final RBMKFluxReceiverBase receiver = (RBMKFluxReceiverBase) columnBase;
-				receiver.receiveFlux(stream, flux);
+                receiver.receiveFlux(stream, flux);
 				return 0;
 			}
-			if (columnBase instanceof RBMKControl)
+			if (columnBase instanceof RBMKControl control)
 			{
-				final RBMKControl control = (RBMKControl) columnBase;
-				if (control.getLevel() == 0)
+                if (control.getLevel() == 0)
 					return 0;
 				return flux * control.getLevel();
 			}
@@ -215,8 +214,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	public void reset()
 	{
 		super.reset();
-		if (fuelRod.isPresent())
-			fuelRod.get().reset();
+        fuelRod.ifPresent(RBMKFuelRod::reset);
 	}
 	
 	@Override
@@ -226,10 +224,9 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof RBMKFuel))
+		if (!(obj instanceof RBMKFuel other))
 			return false;
-		final RBMKFuel other = (RBMKFuel) obj;
-		return Double.doubleToLongBits(fluxFast) == Double.doubleToLongBits(other.fluxFast)
+        return Double.doubleToLongBits(fluxFast) == Double.doubleToLongBits(other.fluxFast)
 				&& Double.doubleToLongBits(fluxSlow) == Double.doubleToLongBits(other.fluxSlow)
 				&& Objects.equals(fuelRod, other.fuelRod) && moderated == other.moderated;
 	}
@@ -246,12 +243,10 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKFuel [heat=").append(heat).append(", water=").append(water).append(", steam=").append(steam)
-				.append(", heatCache=").append(Arrays.toString(heatCache)).append(", location=").append(location)
-				.append(", moderated=").append(moderated).append(", fuelRod=").append(fuelRod).append(", fluxFast=")
-				.append(fluxFast).append(", fluxSlow=").append(fluxSlow).append(']');
-		return builder.toString();
+        return "RBMKFuel [heat=" + heat + ", water=" + water + ", steam=" + steam +
+                ", heatCache=" + Arrays.toString(heatCache) + ", location=" + location +
+                ", moderated=" + moderated + ", fuelRod=" + fuelRod + ", fluxFast=" +
+                fluxFast + ", fluxSlow=" + fluxSlow + ']';
 	}
 
 }

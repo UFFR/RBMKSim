@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.scolumns;
 
+import java.io.Serial;
 import java.util.Arrays;
 
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
@@ -8,6 +9,7 @@ import org.uffr.rbmksim.simulation.GridLocation;
 
 public class RBMKBlank extends RBMKSimColumnBase
 {
+	@Serial
 	private static final long serialVersionUID = -9157288903978474500L;
 
 	public RBMKBlank(GridLocation location)
@@ -34,10 +36,8 @@ public class RBMKBlank extends RBMKSimColumnBase
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof RBMKBlank))
-			return false;
-		return true;
-	}
+        return obj instanceof RBMKBlank;
+    }
 
 	@Override
 	public int hashCode()
@@ -48,11 +48,10 @@ public class RBMKBlank extends RBMKSimColumnBase
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKBlank [heat=").append(heat).append(", water=").append(water).append(", steam=")
-				.append(steam).append(", heatCache=").append(Arrays.toString(heatCache)).append(", location=")
-				.append(location).append(']');
-		return builder.toString();
+        String builder = "RBMKBlank [heat=" + heat + ", water=" + water + ", steam=" +
+                steam + ", heatCache=" + Arrays.toString(heatCache) + ", location=" +
+                location + ']';
+		return builder;
 	}
 
 }

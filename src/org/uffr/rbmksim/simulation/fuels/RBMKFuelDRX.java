@@ -2,12 +2,14 @@ package org.uffr.rbmksim.simulation.fuels;
 
 import static org.uffr.uffrlib.math.MathUtil.sigFigRounding;
 
+import java.io.Serial;
 import java.util.List;
 
 import javafx.scene.text.Text;
 
 public class RBMKFuelDRX extends RBMKFuelRod
 {
+	@Serial
 	private static final long serialVersionUID = 3549214920523328622L;
 
 	public RBMKFuelDRX()

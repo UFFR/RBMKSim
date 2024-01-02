@@ -1,10 +1,14 @@
 package org.uffr.rbmksim.main;
 
+import java.awt.Desktop;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -19,8 +23,11 @@ import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
+import org.uffr.rbmksim.util.FileOpener;
+import org.uffr.rbmksim.util.FileUtil;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.rbmksim.util.InfoProviderNT;
+import org.uffr.rbmksim.util.MiscUtil;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
 import org.uffr.uffrlib.misc.Version;
 
@@ -35,6 +42,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -49,6 +57,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.TextFlow;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.StringConverter;
 
 public class MainController implements Initializable
@@ -59,6 +69,7 @@ public class MainController implements Initializable
 	private static final String SEMVER_REGEX = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
 	private static final Pattern SEMVER_PATTERN = Pattern.compile(SEMVER_REGEX);
 	private static final double SCROLL_FACTOR = 40, DEFAULT_ZOOM = 0.25, MAX_ZOOM = 5, MIN_ZOOM = 0.25;
+	private static Path licensePath = null, lastPath = null;
 	private RBMKFrame currentFrame = null;
 	@FXML
 	private TextFlow infoTextArea;
@@ -87,6 +98,8 @@ public class MainController implements Initializable
 	private Label nameLabel, creatorLabel, versionLabel, dateLabel, zoomLabel;
 	@FXML
 	private Tooltip nameTooltip, creatorNameTooltip, versionTooltip, dateTooltip, setColumnButtonTooltip;
+	@FXML
+	private MenuItem helpHelpMenuItem, helpCreditsMenuItem, helpLicenseMenuItem, helpAboutMenuItem;
 	
 	@Override
 	public void initialize(URL url, ResourceBundle bundle)
@@ -106,26 +119,7 @@ public class MainController implements Initializable
 				final Object item = field.get(this);
 				if (item == null)
 					continue;
-				
-//				if (!(item instanceof Node))
-//					continue;
-				
-//				LOGGER.trace("Field [" + field + "] passed class check");
-				
-				/*final Node node = (Node) object;
-				
-				for (Object key : node.getProperties().keySet())
-				{
-					LOGGER.trace("Testing key [" + key + ']');
-					if (key instanceof String)
-					{
-						LOGGER.trace("Key [" + key + "] is a string");
-						if (I18n.hasKey("app." + field.getName() + '.' + (String) key))
-							node.getProperties().put(key, I18n.resolve((String) key));
-					}
-				}*/
-				
-//				final Object item = field.get(this);
+
 				LOGGER.trace("Accumulating field methods...");
 				final ArrayList<Method> setterMethods = new ArrayList<>();
 				for (Method method : item.getClass().getMethods())
@@ -218,6 +212,7 @@ public class MainController implements Initializable
 			dateInput.setValue(null);
 			canvasAnchor.setPrefWidth(Region.USE_COMPUTED_SIZE);
 			canvasAnchor.setPrefHeight(Region.USE_COMPUTED_SIZE);
+			RBMKRenderHelper.clearCanvas(mainCanvas.getGraphicsContext2D(), mainCanvas);
 		} else
 		{
 			nameTextField.setText(currentFrame.getName());
@@ -238,14 +233,6 @@ public class MainController implements Initializable
 		
 		Main.setFrame(new RBMKBlueprint(mainCanvas));
 		
-		// TODO Remove
-		/*final ColumnType testType = ColumnType.BLANK;
-		final RBMKFrame frame = Main.getFrame().get();
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 0), testType, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(0, 10), testType, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 0), testType, false));
-		frame.addColumn(new RBMKBlueprintColumn(new GridLocation(10, 10), testType, false));*/
-		
 		onFrameChanged();
 	}
 	
@@ -262,7 +249,27 @@ public class MainController implements Initializable
 	{
 		// TODO Auto-generated method stub
 		LOGGER.debug("onClickOpen() triggered");
-		onFrameChanged();
+		final FileChooser chooser = new FileChooser();
+		chooser.setTitle(I18n.resolve("dialog.file.open"));
+		chooser.setInitialDirectory(Main.USER_PATH.toFile());
+		chooser.setSelectedExtensionFilter(FileUtil.GENERIC_FILTER);
+		final Path path = MiscUtil.fileToPathOrNull(chooser.showOpenDialog(Main.getStage()));
+		if (path == null)
+			return;
+
+		// TODO Proper implementation
+		LOGGER.info("Reading saved file...");
+        try
+        {
+            Main.setFrame(FileUtil.readSaveFile(path));
+			Main.getFrame().ifPresent(frame -> frame.setCanvas(mainCanvas));
+        } catch (NoSuchFileException e)
+        {
+			LOGGER.warn("File does not exist!", e);
+			Main.openErrorDialog(e);
+        }
+
+        onFrameChanged();
 	}
 	
 	@FXML
@@ -270,7 +277,9 @@ public class MainController implements Initializable
 	{
 		// TODO Auto-generated method stub
 		LOGGER.debug("onClickClose() triggered");
+		lastPath = null;
 		Main.closeFrame();
+		setInfoArea(null);
 		onFrameChanged();
 	}
 	
@@ -279,6 +288,10 @@ public class MainController implements Initializable
 	{
 		// TODO Auto-generated method stub
 		LOGGER.debug("onClickSave() triggered");
+		if (lastPath == null)
+			onClickSaveAs();
+		else
+			FileUtil.writeSaveFile(lastPath, currentFrame);
 	}
 	
 	@FXML
@@ -286,6 +299,24 @@ public class MainController implements Initializable
 	{
 		// TODO Auto-generated method stub
 		LOGGER.debug("onClickSaveAs() triggered");
+		if (currentFrame == null)
+			return;
+		final FileChooser chooser = new FileChooser();
+		chooser.setTitle(I18n.resolve("dialog.file.save"));
+		chooser.setInitialDirectory(Main.USER_PATH.toFile());
+		chooser.setSelectedExtensionFilter(switch (currentFrame)
+					{
+						case RBMKBlueprint b -> FileUtil.BLUEPRINT_FILTER;
+						case RBMKSimulation s -> FileUtil.SIMULATION_FILTER;
+						default -> throw new IllegalStateException("Invalid type: " + currentFrame.getClass());
+					}
+				);
+		final Path path = MiscUtil.fileToPathOrNull(chooser.showSaveDialog(Main.getStage()));
+		if (path != null)
+		{
+			lastPath = path;
+			FileUtil.writeSaveFile(path, currentFrame);
+		}
 	}
 	
 	@FXML
@@ -300,6 +331,37 @@ public class MainController implements Initializable
 	{
 		// TODO Auto-generated method stub
 		LOGGER.debug("onClickPreferences() triggered");
+	}
+	
+	@SuppressWarnings("static-method")
+	@FXML
+	private void onClickLicense()
+	{
+		LOGGER.debug("onClickLicense() triggered");
+		if (!Desktop.isDesktopSupported())
+		{
+			LOGGER.warn("Unable to open license because there is no provided desktop instance!");
+			return;
+		}
+		// Try to read as file first
+		// If doesn't already exist
+		if (licensePath == null)
+		{
+			LOGGER.trace("License temp file doesn't already exist, creating...");
+			try
+			{
+				licensePath = MiscUtil.extractResource("resources/quick-guide-gplv3.pdf", ".pdf");
+			} catch (IOException e)
+			{
+				LOGGER.warn("Unable to extract license file!", e);
+				Main.openErrorDialog(e);
+				licensePath = null;
+				return;
+			}
+		}
+		LOGGER.trace("Displaying license file...");
+		final Thread openThread = new Thread(new FileOpener(licensePath), "File Open Thread");
+		openThread.start();
 	}
 	
 	@SuppressWarnings("static-method")
@@ -469,10 +531,10 @@ public class MainController implements Initializable
 	private void onClickSetColumn()
 	{
 		LOGGER.debug("onClickSetColumn() triggered");
-		if (currentFrame != null && currentFrame.selectedLocation.isPresent())
+		if (currentFrame != null && RBMKFrame.selectedLocation.isPresent())
 		{
-			currentFrame.setColumn(currentFrame.selectedLocation.get(), columnTypeBox.getValue());
-			setInfoArea(currentFrame.getColumnAtCoords(currentFrame.selectedLocation.get()));
+			currentFrame.setColumn(RBMKFrame.selectedLocation.get(), columnTypeBox.getValue());
+			setInfoArea(currentFrame.getColumnAtCoords(RBMKFrame.selectedLocation.get()));
 			currentFrame.render();
 		}
 	}
@@ -481,13 +543,13 @@ public class MainController implements Initializable
 	private void onClickResetColumn()
 	{
 		LOGGER.debug("onClickResetColumn() triggered");
-		if (currentFrame != null && currentFrame.selectedLocation.isPresent())
+		if (currentFrame != null && RBMKFrame.selectedLocation.isPresent())
 		{
-			currentFrame.setColumn(currentFrame.selectedLocation.get(), null);
+			currentFrame.setColumn(RBMKFrame.selectedLocation.get(), null);
 			setInfoArea(null);
 			// Better performance?
-			RBMKRenderHelper.eraseColumn(currentFrame.selectedLocation.get(), mainCanvas.getGraphicsContext2D(), currentFrame.getRenderer().zoom);
-			RBMKRenderHelper.drawSelectionRect(currentFrame.selectedLocation.get(), mainCanvas.getGraphicsContext2D(), currentFrame.getRenderer().zoom);
+			RBMKRenderHelper.eraseColumn(RBMKFrame.selectedLocation.get(), mainCanvas.getGraphicsContext2D(), currentFrame.getRenderer().zoom);
+			RBMKRenderHelper.drawSelectionRect(RBMKFrame.selectedLocation.get(), mainCanvas.getGraphicsContext2D(), currentFrame.getRenderer().zoom);
 		}
 	}
 	
@@ -502,7 +564,7 @@ public class MainController implements Initializable
 	private static double clampZoom(double amount)
 	{
 		LOGGER.trace("Clamping zoom amount...");
-		return amount > MAX_ZOOM ? MAX_ZOOM : amount < MIN_ZOOM ? MIN_ZOOM : amount;
+		return amount > MAX_ZOOM ? MAX_ZOOM : Math.max(amount, MIN_ZOOM);
 	}
 	
 }

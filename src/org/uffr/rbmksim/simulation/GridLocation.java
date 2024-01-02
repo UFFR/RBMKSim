@@ -1,43 +1,23 @@
 package org.uffr.rbmksim.simulation;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.Objects;
 
 import com.google.common.hash.Funnel;
 import com.google.errorprone.annotations.Immutable;
 
 @Immutable
-public class GridLocation implements Serializable
+public record GridLocation(int x, int y) implements Serializable
 {
+	@Serial
 	private static final long serialVersionUID = 2469677386448724846L;
-	public static final Funnel<GridLocation> FUNNEL = (grid, sink) -> sink.putInt(grid.getX()).putInt(grid.getY());
-	private final int x, y;
-	public GridLocation(int x, int y)
-	{
-		this.x = x;
-		this.y = y;
-	}
-	
-	public int getX()
-	{
-		return x;
-	}
+	public static final Funnel<GridLocation> FUNNEL = (grid, sink) -> sink.putInt(grid.x()).putInt(grid.y());
 
-	public int getY()
-	{
-		return y;
-	}
 
 	@Override
 	public GridLocation clone()
 	{
 		return new GridLocation(x, y);
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(x, y);
 	}
 
 	@Override

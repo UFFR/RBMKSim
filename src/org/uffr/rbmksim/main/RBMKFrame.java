@@ -2,6 +2,7 @@ package org.uffr.rbmksim.main;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ import javafx.scene.canvas.Canvas;
  */
 public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 {
+	@Serial
 	private static final long serialVersionUID = 6249022375925162759L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKFrame.class);
 	private static int creationCount = 1;
@@ -70,7 +72,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	// Timer for adding nodes to the graph, for performance
 	protected transient int graphTimer;
 	// Selected column
-	protected transient Optional<GridLocation> selectedLocation = Optional.empty();
+	protected static Optional<GridLocation> selectedLocation = Optional.empty();
 	
 	public RBMKFrame(Canvas canvas)
 	{
@@ -98,17 +100,14 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		this.config = frame.config.clone();
 		this.grid = new ExpandingArrayMatrix<>(frame.grid);
 		this.registeredLocations = new HashSet<>(frame.registeredLocations);
-		this.name = frame.name;
-		this.creatorName = frame.creatorName;
-		this.version = frame.version;
 		this.rows = frame.rows;
 		this.columns = frame.columns;
 		this.name = frame.name;
 		this.creatorName = frame.creatorName;
 		this.version = frame.version;
 		this.date = frame.date;
-		// Probably shouldn't copy ticks if it's a new frame
-		
+		this.ticks = frame.ticks;// Might as well
+
 		renderer = new RBMKRenderHelper(canvas, canvas.getGraphicsContext2D(), grid.getRows(), grid.getCols());
 	}
 	
@@ -126,11 +125,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public abstract RBMKFrame convertType();
 	protected abstract void convertColumns();
-	/**
-	 * Render the design to an exportable image.
-	 * @return A raw image.
-	 */
-//	public abstract InternalImage renderToImage();
+    //	public abstract InternalImage renderToImage();
 	
 	/**
 	 * Sets the grid location to a column of type
@@ -184,7 +179,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		renderer.flush();
 	}
 	
-	// Change the canvas, if needed.
+	// Change the canvas, if needed, such as during deserialization
 	public void setCanvas(Canvas canvas)
 	{
 		LOGGER.debug("RBMKFrame Canvas reset...");
@@ -256,7 +251,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		if (!validCoords(column.getLocation()))
 			return false;
 		LOGGER.trace("Column was accepted");
-		grid.set(column.getLocation().getX(), column.getLocation().getY(), column);
+		grid.set(column.getLocation().x(), column.getLocation().y(), column);
 		registeredLocations.add(column.getLocation());
 		return true;
 	}
@@ -270,7 +265,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	{
 		LOGGER.debug("Removing column at: [x={}, y={}]", x, y);
 		grid.remove(x, y);
-		registeredLocations.removeIf(loc -> loc.getX() == x && loc.getY() == y);
+		registeredLocations.removeIf(loc -> loc.x() == x && loc.y() == y);
 	}
 	
 	/**
@@ -279,7 +274,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public void removeColumn(GridLocation location)
 	{
-		removeColumn(location.getX(), location.getY());
+		removeColumn(location.x(), location.y());
 	}
 	
 	/**
@@ -310,7 +305,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public boolean validCoords(GridLocation loc)
 	{
-		return validCoords(loc.getX(), loc.getY());
+		return validCoords(loc.x(), loc.y());
 	}
 	
 	/**
@@ -344,7 +339,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	 */
 	public RBMKColumnBase getColumnAtCoords(GridLocation location)
 	{
-		return getColumnAtCoords(location.getX(), location.getY());
+		return getColumnAtCoords(location.x(), location.y());
 	}
 	
 	/**
@@ -477,7 +472,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void setSelectedLocation(Optional<GridLocation> selectedLocation)
 	{
-		renderer.selectedLocation = this.selectedLocation = this.selectedLocation.equals(selectedLocation) || (selectedLocation.isPresent() && invalidCoords(selectedLocation.get())) ? Optional.empty() : selectedLocation;
+		renderer.selectedLocation = RBMKFrame.selectedLocation = RBMKFrame.selectedLocation.equals(selectedLocation) || (selectedLocation.isPresent() && invalidCoords(selectedLocation.get())) ? Optional.empty() : selectedLocation;
 	}
 	
 	@Override
@@ -486,7 +481,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 		sink.putInt(rows).putInt(columns).putInt(ticks).putString(name, UTF_8).putString(creatorName, UTF_8);
 		version.funnelInto(sink);
 		config.funnelInto(sink);
-		registeredLocations.forEach(l -> {grid.get(l.getX(), l.getY()).funnelInto(sink); GridLocation.FUNNEL.funnel(l, sink);});
+		registeredLocations.forEach(l -> {grid.get(l.x(), l.y()).funnelInto(sink); GridLocation.FUNNEL.funnel(l, sink);});
 	}
 	
 	@Override
@@ -497,7 +492,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 			return (RBMKFrame) super.clone();
 		} catch (CloneNotSupportedException e)
 		{
-			e.printStackTrace();
+			LOGGER.warn("Could not clone frame, this should not be possible!", e);
 			Main.openErrorDialog(e);
 			return null;
 		}
@@ -514,10 +509,9 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RBMKFrame))
+		if (!(obj instanceof RBMKFrame other))
 			return false;
-		final RBMKFrame other = (RBMKFrame) obj;
-		return columns == other.columns && Objects.equals(config, other.config)
+        return columns == other.columns && Objects.equals(config, other.config)
 				&& Objects.equals(creatorName, other.creatorName) && Objects.equals(date, other.date)
 				&& Objects.equals(grid, other.grid) && Objects.equals(name, other.name)
 				&& Objects.equals(registeredLocations, other.registeredLocations) && rows == other.rows

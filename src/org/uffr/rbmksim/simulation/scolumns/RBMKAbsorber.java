@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.scolumns;
 
+import java.io.Serial;
 import java.util.Arrays;
 
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
@@ -8,6 +9,7 @@ import org.uffr.rbmksim.simulation.GridLocation;
 
 public class RBMKAbsorber extends RBMKSimColumnBase
 {
+	@Serial
 	private static final long serialVersionUID = 1700212015824766625L;
 
 	public RBMKAbsorber(GridLocation location)
@@ -40,19 +42,16 @@ public class RBMKAbsorber extends RBMKSimColumnBase
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof RBMKAbsorber))
-			return false;
-		return true;
-	}
+        return obj instanceof RBMKAbsorber;
+    }
 
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKAbsorber [heat=").append(heat).append(", water=").append(water).append(", steam=")
-				.append(steam).append(", heatCache=").append(Arrays.toString(heatCache)).append(", location=")
-				.append(location).append(']');
-		return builder.toString();
+        String builder = "RBMKAbsorber [heat=" + heat + ", water=" + water + ", steam=" +
+                steam + ", heatCache=" + Arrays.toString(heatCache) + ", location=" +
+                location + ']';
+		return builder;
 	}
 
 }

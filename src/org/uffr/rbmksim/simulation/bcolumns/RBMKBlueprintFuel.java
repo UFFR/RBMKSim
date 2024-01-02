@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.bcolumns;
 
+import java.io.Serial;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -10,43 +11,46 @@ import org.uffr.rbmksim.simulation.scolumns.RBMKFuel;
 
 import com.google.common.hash.PrimitiveSink;
 
+import javax.annotation.Nullable;
+
 public class RBMKBlueprintFuel extends RBMKBlueprintColumn
 {
+	@Serial
 	private static final long serialVersionUID = -3585125936742359209L;
-	private Optional<RBMKFuelData> fuelData;
+	private RBMKFuelData fuelData;
 	public RBMKBlueprintFuel(RBMKFuel column)
 	{
 		super(column);
-		fuelData = Optional.ofNullable(column.getFuelRod().isPresent() ? column.getFuelRod().get().data : null);
+		fuelData = (column.getFuelRod().isPresent() ? column.getFuelRod().get().data : null);
 	}
 	
 	public RBMKBlueprintFuel(GridLocation location, ColumnType columnType, boolean moderated, RBMKFuelData fuelData)
 	{
 		super(location, columnType, moderated);
-		this.fuelData = Optional.ofNullable(fuelData);
+		this.fuelData = fuelData;
 	}
 	
-	public void setFuelData(RBMKFuelData fuelData)
+	public void setFuelData(@Nullable RBMKFuelData fuelData)
 	{
-		this.fuelData = Optional.ofNullable(fuelData);
+		this.fuelData = fuelData;
 	}
 	
 	public Optional<RBMKFuelData> getFuelData()
 	{
-		return fuelData;
+		return Optional.ofNullable(fuelData);
 	}
 	
 	@Override
 	public void reset()
 	{
-		fuelData = Optional.empty();
+		fuelData = null;
 	}
 	
 	@Override
 	public void funnelInto(PrimitiveSink sink)
 	{
 		super.funnelInto(sink);
-		fuelData.ifPresent(data -> data.funnelInto(sink));
+		getFuelData().ifPresent(data -> data.funnelInto(sink));
 	}
 
 	@Override
@@ -65,10 +69,9 @@ public class RBMKBlueprintFuel extends RBMKBlueprintColumn
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof RBMKBlueprintFuel))
+		if (!(obj instanceof RBMKBlueprintFuel other))
 			return false;
-		final RBMKBlueprintFuel other = (RBMKBlueprintFuel) obj;
-		return Objects.equals(fuelData, other.fuelData);
+        return Objects.equals(fuelData, other.fuelData);
 	}
 
 	@Override

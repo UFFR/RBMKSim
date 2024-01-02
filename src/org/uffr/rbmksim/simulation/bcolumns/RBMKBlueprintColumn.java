@@ -1,5 +1,6 @@
 package org.uffr.rbmksim.simulation.bcolumns;
 
+import java.io.Serial;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -17,11 +18,12 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class RBMKBlueprintColumn extends RBMKColumnBase
 {
+	@Serial
 	private static final long serialVersionUID = -1620510951364863121L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKBlueprintColumn.class);
 	public static final Funnel<RBMKBlueprintColumn> FUNNEL = (col, sink) ->
 	{
-		sink.putInt(col.getColumnType().ordinal()).putInt(col.getLocation().getX()).putInt(col.getLocation().getY()).putBoolean(col.isModerated());
+		sink.putInt(col.getColumnType().ordinal()).putInt(col.getLocation().x()).putInt(col.getLocation().y()).putBoolean(col.isModerated());
 	};
 	
 	private final ColumnType columnType;
@@ -86,10 +88,9 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RBMKBlueprintColumn))
+		if (!(obj instanceof RBMKBlueprintColumn other))
 			return false;
-		final RBMKBlueprintColumn other = (RBMKBlueprintColumn) obj;
-		return columnType == other.columnType && Objects.equals(location, other.location)
+        return columnType == other.columnType && Objects.equals(location, other.location)
 				&& moderated == other.moderated;
 	}
 

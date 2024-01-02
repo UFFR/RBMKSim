@@ -2,6 +2,7 @@ package org.uffr.rbmksim.simulation.fuels;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,7 @@ import javafx.scene.text.Text;
 
 public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
 {
+	@Serial
 	private static final long serialVersionUID = -8545270346483383342L;
 	private final double reactivity, meltingPoint;
 	private final double yield, selfRate, xenonGen, xenonBurn, heatGen, diffusion;
@@ -198,10 +200,9 @@ public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof RBMKFuelData))
+		if (!(obj instanceof RBMKFuelData other))
 			return false;
-		final RBMKFuelData other = (RBMKFuelData) obj;
-		return burnFunction == other.burnFunction && depleteFunction == other.depleteFunction
+        return burnFunction == other.burnFunction && depleteFunction == other.depleteFunction
 				&& Double.doubleToLongBits(diffusion) == Double.doubleToLongBits(other.diffusion)
 				&& fuelCategory == other.fuelCategory && Objects.equals(fullName, other.fullName)
 				&& Double.doubleToLongBits(heatGen) == Double.doubleToLongBits(other.heatGen) && inType == other.inType

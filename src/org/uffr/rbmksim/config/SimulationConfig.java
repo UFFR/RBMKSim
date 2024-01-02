@@ -4,6 +4,7 @@ import static org.uffr.rbmksim.util.MiscUtil.parseBoolean;
 import static org.uffr.rbmksim.util.MiscUtil.parseDouble;
 import static org.uffr.rbmksim.util.MiscUtil.parseInt;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,7 @@ import com.google.common.hash.PrimitiveSink;
 
 public class SimulationConfig implements Config<SimulationConfig>, Hashable, Serializable, Cloneable
 {
+	@Serial
 	private static final long serialVersionUID = 7368336732849301763L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationConfig.class);
 	
@@ -237,10 +239,9 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 	{
 		if (this == obj)
 			return true;
-		if (!(obj instanceof SimulationConfig))
+		if (!(obj instanceof SimulationConfig other))
 			return false;
-		final SimulationConfig other = (SimulationConfig) obj;
-		return Double.doubleToLongBits(boilerHeatConsumption) == Double.doubleToLongBits(other.boilerHeatConsumption)
+        return Double.doubleToLongBits(boilerHeatConsumption) == Double.doubleToLongBits(other.boilerHeatConsumption)
 				&& Double.doubleToLongBits(columnHeatFlow) == Double.doubleToLongBits(other.columnHeatFlow)
 				&& Double.doubleToLongBits(controlSpeedMod) == Double.doubleToLongBits(other.controlSpeedMod)
 				&& fluxRange == other.fluxRange

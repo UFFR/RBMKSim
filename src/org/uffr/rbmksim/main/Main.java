@@ -1,5 +1,7 @@
 package org.uffr.rbmksim.main;
 
+import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -26,10 +28,15 @@ public class Main extends Application
 	// Useful for tracking discrepancies between saved files and the currently running program. Doesn't track metadata due to how I calculate it though.
 	private static final Version VERSION = new Version(0, 5, 3, "SNAPSHOT");
 	// Basic strings reused in various places.
-	public static final String EXT_BPRINT = "rbmk",
-							   EXT_RSIM   = "rsim";
+	public static final String EXT_BPRINT = "*.rbmk",
+							   EXT_RSIM   = "*.rsim";
+	public static final boolean LINUX = System.getProperty("os.name").contains("Linux");
+	public static final Path
+							USER_PATH = Path.of(System.getProperty("user.home")),// TODO Change if it causes the program to explode
+							CONFIG_PATH = LINUX ? Path.of(System.getProperty("user.home"), ".config", "rbmksim") : Path.of("%APPDATA%", "rbmksim"),// TODO Ditto
+							TEMP_PATH = LINUX ? Path.of("/", "tmp") : Path.of("%TEMP%");
 	// Icon of the program.
-	public static final Image ICON_IMAGE = new Image(Main.class.getClassLoader().getResourceAsStream("resources/rad.png"));
+	public static final Image ICON_IMAGE = new Image(Objects.requireNonNull(Main.class.getClassLoader().getResourceAsStream("resources/rad.png")));
 	
 	// The current frame.
 //	protected static Optional<RBMKFrame> frame = Optional.empty();
@@ -57,7 +64,7 @@ public class Main extends Application
 			openErrorDialog(e);
 		});
 		stage = primaryStage;
-		final Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("resources/main_window.fxml"));
+		final Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/main_window.fxml")));
 		primaryStage.setTitle(I18n.resolve("app.title"));
         primaryStage.setScene(new Scene(root, 720, 480));
         primaryStage.getIcons().add(ICON_IMAGE);

@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 
 public class FuelRegistry
 {
-	public static final Map<String, RBMKFuelData> FUEL_REGISTRY = new HashMap<String, RBMKFuelData>();
+	public static final Map<String, RBMKFuelData> FUEL_REGISTRY = new HashMap<>();
 	
 	public static final RBMKFuelData NU_FUEL = register(new RBMKFuelBuilder("NU Fuel", "Unenriched Uranium", 15, 2865, 0));
 	public static final RBMKFuelData DRX_FUEL = register(new RBMKFuelBuilder("Digamma Fuel", "Can you hear? Can you hear the thunder?", 10_000, 1_000_000, 0).setBurnFunction(EnumBurnFunction.QUADRATIC));

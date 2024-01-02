@@ -3,6 +3,7 @@ package org.uffr.rbmksim.simulation.scolumns;
 import static org.uffr.rbmksim.util.RBMKRenderHelper.CELL_SIZE;
 import static org.uffr.rbmksim.util.RBMKRenderHelper.LINE_WIDTH;
 
+import java.io.Serial;
 import java.util.Objects;
 
 import org.uffr.rbmksim.simulation.ColumnType;
@@ -23,12 +24,13 @@ public abstract class RBMKControl extends RBMKSimColumnBase
 		BLUE(Color.BLUE),
 		PURPLE(Color.PURPLE);
 		public final Color renderColor;
-		private ControlRodColor(Color renderColor)
+		ControlRodColor(Color renderColor)
 		{
 			this.renderColor = renderColor;
 		}
 	}
 
+	@Serial
 	private static final long serialVersionUID = -8157601179242556675L;
 	public static final double SPEED = 0.00277;
 	protected final boolean moderated;
@@ -63,7 +65,7 @@ public abstract class RBMKControl extends RBMKSimColumnBase
 		graphics.setFill(Color.BLACK);
 		// TODO Check if renders properly
 		final int offset = (int) Math.round(level * 8);
-		graphics.fillRect(location.getX() + offset, location.getY() + LINE_WIDTH, location.getX() + CELL_SIZE - offset, location.getY() + CELL_SIZE - LINE_WIDTH);
+		graphics.fillRect(location.x() + offset, location.y() + LINE_WIDTH, location.x() + CELL_SIZE - offset, location.y() + CELL_SIZE - LINE_WIDTH);
 	}
 	
 	public double getTargetLevel()
@@ -121,10 +123,9 @@ public abstract class RBMKControl extends RBMKSimColumnBase
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (!(obj instanceof RBMKControl))
+		if (!(obj instanceof RBMKControl other))
 			return false;
-		final RBMKControl other = (RBMKControl) obj;
-		return Double.doubleToLongBits(lastLevel) == Double.doubleToLongBits(other.lastLevel)
+        return Double.doubleToLongBits(lastLevel) == Double.doubleToLongBits(other.lastLevel)
 				&& Double.doubleToLongBits(level) == Double.doubleToLongBits(other.level)
 				&& moderated == other.moderated && rodColor == other.rodColor
 				&& Double.doubleToLongBits(targetLevel) == Double.doubleToLongBits(other.targetLevel);
