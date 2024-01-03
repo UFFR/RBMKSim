@@ -8,14 +8,14 @@ import java.util.Optional;
 
 import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.rbmksim.main.dialog.ColumnDialogBase;
-import org.uffr.rbmksim.main.dialog.FuelDialog;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.Direction;
 import org.uffr.rbmksim.simulation.GridLocation;
+import org.uffr.rbmksim.simulation.fuels.FuelType;
 import org.uffr.rbmksim.simulation.fuels.NeutronType;
-import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelRod;
 import org.uffr.rbmksim.util.I18n;
+import org.uffr.rbmksim.util.MiscUtil;
 import org.uffr.rbmksim.util.RBMKRenderHelper;
 
 import com.google.common.hash.PrimitiveSink;
@@ -23,6 +23,7 @@ import com.google.common.hash.PrimitiveSink;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.text.Text;
 
+@SuppressWarnings("UnstableApiUsage")
 public class RBMKFuel extends RBMKFluxReceiverBase
 {
 	@Serial
@@ -30,7 +31,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 
 	protected static NeutronType stream;
 	private final boolean moderated;
-	protected Optional<RBMKFuelRod> fuelRod = Optional.empty();
+	protected RBMKFuelRod fuelRod = null;
 	protected double fluxFast, fluxSlow;
 	public RBMKFuel(GridLocation location, boolean moderated)
 	{
@@ -38,10 +39,10 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 		this.moderated = moderated;
 	}
 	
-	public RBMKFuel(GridLocation location, boolean moderated, Optional<RBMKFuelData> data)
+	public RBMKFuel(GridLocation location, boolean moderated, FuelType type)
 	{
 		this(location, moderated);
-		fuelRod = data.map(RBMKFuelRod::new);
+		fuelRod = MiscUtil.convertOrNull(type, RBMKFuelRod::new);
 	}
 	
 	@Override
@@ -52,24 +53,23 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 
 	public void setFuelRod(RBMKFuelRod fuelRod)
 	{
-		this.fuelRod = Optional.ofNullable(fuelRod);
+		this.fuelRod = fuelRod;
 	}
 	
 	public Optional<RBMKFuelRod> getFuelRod()
 	{
-		return fuelRod;
+		return Optional.ofNullable(fuelRod);
 	}
 	
 	@Override
 	public void tick()
 	{
-		if (fuelRod.isPresent())
+		if (fuelRod != null)
 		{
-			final RBMKFuelRod rod = fuelRod.get();
-			final double fluxIn = fluxFromType(rod.data.receiveType());
-			final double fluxOut = rod.burn(fluxIn);
-			rod.updateHeat(1);
-			heat += rod.provideHeat(heat, 1);
+			final double fluxIn = fluxFromType(fuelRod.type.data.receiveType());
+			final double fluxOut = fuelRod.burn(fluxIn);
+			fuelRod.updateHeat(1);
+			heat += fuelRod.provideHeat(heat, 1);
 			
 			if (heat > maxHeat())
 			{
@@ -82,9 +82,8 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 			fluxFast = 0;
 			fluxSlow = 0;
 			
-			spreadFlux(rod.data.returnType(), fluxOut);
-		}
-		else
+			spreadFlux(fuelRod.type.data.returnType(), fluxOut);
+		} else
 		{
 			fluxFast = 0;
 			fluxSlow = 0;
@@ -95,6 +94,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	@Override
 	public void receiveFlux(NeutronType type, double flux)
 	{
+		// TODO "ANY" enum type
 		switch (type)
 		{
 			case FAST: fluxFast += flux; break;
@@ -168,8 +168,7 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 			if (columnBase instanceof RBMKAbsorber)
 				return 0;
 			return flux;
-		}
-		else
+		} else
 			return 0;
 	}
 	
@@ -178,7 +177,8 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	{
 		super.funnelInto(sink);
 		sink.putDouble(fluxFast).putDouble(fluxSlow).putBoolean(moderated);
-		fuelRod.ifPresent(f -> f.funnelInto(sink));
+		if (fuelRod != null)
+			fuelRod.funnelInto(sink);
 	}
 
 	@Override
@@ -190,7 +190,8 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	@Override
 	public ColumnDialogBase<RBMKFuel> getMenu()
 	{
-		return new FuelDialog(this);
+		// TODO
+		return null;
 	}
 	
 
@@ -204,17 +205,18 @@ public class RBMKFuel extends RBMKFluxReceiverBase
 	public void addInformation(List<Text> info)
 	{
 		super.addInformation(info);
-		if (fuelRod.isPresent())
-			fuelRod.get().addInformation(info);
+		if (fuelRod != null)
+			fuelRod.addInformation(info);
 		else
-			info.add(new Text(I18n.resolve("column.fuel.empty")));
+			info.add(new Text(I18n.resolve("column.type.fuel.empty")));
 	}
 	
 	@Override
 	public void reset()
 	{
 		super.reset();
-        fuelRod.ifPresent(RBMKFuelRod::reset);
+		if (fuelRod != null)
+			fuelRod.reset();
 	}
 	
 	@Override

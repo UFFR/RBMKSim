@@ -1,12 +1,11 @@
 package org.uffr.rbmksim.util;
 
-import java.nio.IntBuffer;
-import java.nio.file.Path;
-import java.util.ArrayDeque;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.function.Consumer;
-
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.simulation.ColumnType;
@@ -15,12 +14,11 @@ import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.uffrlib.bytes.ByteSequence;
 import org.uffr.uffrlib.images.Images;
 
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.PixelReader;
-import javafx.scene.image.WritableImage;
-import javafx.scene.paint.Color;
+import java.nio.IntBuffer;
+import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.function.Consumer;
 
 public class RBMKRenderHelper
 {
@@ -43,7 +41,7 @@ public class RBMKRenderHelper
 	private final GraphicsContext graphics;
 	private final Queue<Consumer<GraphicsContext>> renderQueue;
 	private final int rows, cols;
-	public Optional<GridLocation> selectedLocation = Optional.empty();
+	public GridLocation selectedLocation = null;
 	public double zoom = 1;
 	
 	public RBMKRenderHelper(int rows, int cols)
@@ -88,8 +86,8 @@ public class RBMKRenderHelper
 		renderBackground(graphics, canvas);
 		while (!renderQueue.isEmpty())
 			renderQueue.poll().accept(graphics);
-		if (selectedLocation.isPresent())
-			drawSelectionRect(selectedLocation.get(), graphics, zoom);
+		if (selectedLocation != null)
+			drawSelectionRect(selectedLocation, graphics, zoom);
 	}
 	
 	public void renderColumn(RBMKColumnBase column)

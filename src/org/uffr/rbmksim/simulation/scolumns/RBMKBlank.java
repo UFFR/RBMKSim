@@ -40,12 +40,6 @@ public class RBMKBlank extends RBMKSimColumnBase
     }
 
 	@Override
-	public int hashCode()
-	{
-		return super.hashCode();
-	}
-
-	@Override
 	public String toString()
 	{
         String builder = "RBMKBlank [heat=" + heat + ", water=" + water + ", steam=" +

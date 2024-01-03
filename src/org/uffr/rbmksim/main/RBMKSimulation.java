@@ -1,26 +1,17 @@
 package org.uffr.rbmksim.main;
 
-import java.io.Serial;
-import java.util.List;
-import java.util.Objects;
-
+import javafx.scene.canvas.Canvas;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.RBMKColumnBase;
 import org.uffr.rbmksim.simulation.bcolumns.RBMKBlueprintColumn;
-import org.uffr.rbmksim.simulation.fuels.FuelRegistry;
-import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
+import org.uffr.rbmksim.simulation.fuels.FuelType;
 import org.uffr.rbmksim.simulation.fuels.RBMKFuelRod;
-import org.uffr.rbmksim.simulation.scolumns.RBMKAbsorber;
-import org.uffr.rbmksim.simulation.scolumns.RBMKBlank;
-import org.uffr.rbmksim.simulation.scolumns.RBMKBoiler;
-import org.uffr.rbmksim.simulation.scolumns.RBMKControl;
-import org.uffr.rbmksim.simulation.scolumns.RBMKFuel;
-import org.uffr.rbmksim.simulation.scolumns.RBMKModerator;
-import org.uffr.rbmksim.simulation.scolumns.RBMKReflector;
-import org.uffr.rbmksim.simulation.scolumns.RBMKSimColumnBase;
+import org.uffr.rbmksim.simulation.scolumns.*;
 
-import javafx.scene.canvas.Canvas;
+import java.io.Serial;
+import java.util.List;
+import java.util.Objects;
 
 public class RBMKSimulation extends RBMKFrame
 {
@@ -54,13 +45,9 @@ public class RBMKSimulation extends RBMKFrame
 	@Override
 	public void tick()
 	{
-//		for (RBMKColumnBase c : grid)
-//			((RBMKSimColumnBase) c).tick();
+		super.tick();
 		for (GridLocation loc : registeredLocations)
 			getColumnAtCoords(loc).tick();
-		super.tick();
-//		if (!running)
-//			timer.cancel();
 	}
 	
 	public void triggerMeltdown()
@@ -85,10 +72,9 @@ public class RBMKSimulation extends RBMKFrame
 				break;
 			}
 			
-			if (simCol instanceof RBMKFuel)
+			if (simCol instanceof RBMKFuel fuel)
 			{
-				final RBMKFuel fuel = (RBMKFuel) simCol;
-				if (fuel.getFuelRod().isPresent() && fuel.getFuelRod().get().getHullHeat() > fuel.getFuelRod().get().data.meltingPoint())
+				if (fuel.getFuelRod().isPresent() && fuel.getFuelRod().get().getHullHeat() > fuel.getFuelRod().get().type.data.meltingPoint())
 				{
 					meltedDown = true;
 					break;
@@ -134,28 +120,28 @@ public class RBMKSimulation extends RBMKFrame
 				if (((RBMKFuel) column).getFuelRod().isPresent())
 				{
 					final RBMKFuel fColumn = (RBMKFuel) column;
-					final RBMKFuelData data = fColumn.getFuelRod().get().data;
-					if (!FuelRegistry.nameExists(data.name()))
+					final RBMKFuelRod rod = fColumn.getFuelRod().get();
+					final FuelType type = rod.type;
+					if (FuelType.FUEL_TYPES.contains(type))
 					{
-						discrepancies.add("Column at " + loc + " is fuel column with rod of unknown type. Possible removed fuel? " + (repair ? "Repair will reset data." : "Not repairing, skipping column."));
+						discrepancies.add("Column at " + loc + " is fuel column with rod of unknown type. Possible removed fuel? " + (repair ? "Repair will reset column." : "Not repairing, skipping column."));
 						if (repair)
 							column.reset();
 						else
 							continue;
 					}
-					if (!FuelRegistry.valueExists(data) || !FuelRegistry.getByName(data.name()).equals(data))
-					{
-						discrepancies.add("Column at " + loc + " is fuel column and has registered fuel type but type data does not correlate with any registered fuel. Possible outdated blueprint/simulation? " + (repair ? "Repair will reset fuel data." : "Not repairing, skipping column."));
-						if (repair)
-							fColumn.setFuelRod(new RBMKFuelRod(FuelRegistry.getByName(data.name())));
-						else
-							continue;
-					}
-					if (fColumn.getFuelRod().get().getRemainingYield() > data.getYield())
+					if (rod.getRemainingYield() > type.data.getYield())
 					{
 						discrepancies.add("Column at " + loc + " is fuel column and has a fuel rod with a yield higher than its designated maximum. Possible corruption? " + (repair ? "Repair will set yield to maximum." : "Not repairing, skipping column."));
 						if (repair)
-							fColumn.getFuelRod().get().resetYield();
+							rod.resetYield();
+						else
+							continue;
+					} else if (rod.getRemainingYield() < 0)
+					{
+						discrepancies.add("Column at " + loc + " is fuel column and has a fuel rod with a negative yield. Possible corruption? " + (repair ? "Repair will set yield to 0." : "Not repairing, skipping column."));
+						if (repair)
+							rod.setYield(0);
 						else
 							continue;
 					}
@@ -215,7 +201,7 @@ public class RBMKSimulation extends RBMKFrame
 	private static RBMKSimColumnBase getConvertedColumn(RBMKColumnBase column)
 	{
 		final GridLocation location = column.getLocation();
-		final RBMKSimColumnBase newColumn = switch (column.getColumnType())
+		return switch (column.getColumnType())
 		{
 			case ABSORBER -> new RBMKAbsorber(location);
 			case BLANK -> new RBMKBlank(location);
@@ -223,7 +209,6 @@ public class RBMKSimulation extends RBMKFrame
 			case BREEDER, OUTGASSER -> new RBMKBlank(location); // TODO Setup breeder column type
 			default -> throw new IllegalStateException("Encountered unknown column type while converting!");
 		};
-		return newColumn;
 	}
 
 	public boolean isRunning()
@@ -233,9 +218,6 @@ public class RBMKSimulation extends RBMKFrame
 	
 	public void setRunning(boolean running)
 	{
-//		if (running && !isRunning())
-//			timer.schedule(TICK_TASK, 50, 50);
-		
 		this.running = running;
 	}
 	
@@ -345,20 +327,12 @@ public class RBMKSimulation extends RBMKFrame
 	}
 	
 	@Override
-	protected void finalize() throws Throwable
-	{
-//		timer.cancel();
-		running = false;
-	}
-
-	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKSimulation [config=").append(config).append(", grid=").append(grid)
-				.append(", registeredLocations=").append(registeredLocations).append(", canvas=").append(canvas)
-				.append(", name=").append(name).append(", rows=").append(rows).append(", columns=").append(columns)
-				.append(", meltedDown=").append(meltedDown).append(", running=").append(running).append(']');
-		return builder.toString();
+		String builder = "RBMKSimulation [config=" + config + ", grid=" + grid +
+				", registeredLocations=" + registeredLocations + ", canvas=" + canvas +
+				", name=" + name + ", rows=" + rows + ", columns=" + columns +
+				", meltedDown=" + meltedDown + ", running=" + running + ']';
+		return builder;
 	}
 }

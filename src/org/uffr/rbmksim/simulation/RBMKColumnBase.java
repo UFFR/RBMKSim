@@ -23,6 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serializable
 {
 	@Serial
@@ -97,11 +98,11 @@ public abstract class RBMKColumnBase implements InfoProviderNT, Hashable, Serial
 	@Override
 	public void addInformation(List<Text> info)
 	{
-		info.add(new TextBuilder(I18n.resolve("column.info")).setUnderline(true).setFont(new Font(20)).getText());
+		info.add(new TextBuilder(I18n.resolve("column.info")).setUnderline(true).setStyle(TextBuilder.FontStyle.BOLD).setFont(new Font(20)).setColor(Color.WHITE).getText());
 		info.add(InfoProviderNT.getNewline());
-		info.add(new TextBuilder(I18n.resolve("column.type", getColumnType())).setFill(Color.YELLOW).getText());
+		info.add(new TextBuilder(I18n.resolve("column.type", getColumnType())).setColor(Color.YELLOW).getText());
 		info.add(InfoProviderNT.getNewline());
-		info.add(new TextBuilder(I18n.resolve("column.moderated", isModerated())).setFill(Color.YELLOW).getText());
+		info.add(new TextBuilder(I18n.resolve("column.moderated", isModerated())).setColor(Color.YELLOW).getText());
 		info.add(InfoProviderNT.getNewline());
 	}
 

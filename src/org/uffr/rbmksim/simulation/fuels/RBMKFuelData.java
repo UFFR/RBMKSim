@@ -1,26 +1,16 @@
 package org.uffr.rbmksim.simulation.fuels;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.rbmksim.util.InfoProviderNT;
 import org.uffr.rbmksim.util.TextBuilder;
-import org.uffr.uffrlib.hashing.Hashable;
 
-import com.google.common.hash.PrimitiveSink;
+import java.util.List;
+import java.util.Objects;
 
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-
-public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
+public final class RBMKFuelData implements InfoProviderNT
 {
-	@Serial
-	private static final long serialVersionUID = -8545270346483383342L;
 	private final double reactivity, meltingPoint;
 	private final double yield, selfRate, xenonGen, xenonBurn, heatGen, diffusion;
 	private final String name, fullName;
@@ -54,12 +44,12 @@ public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
 
 	public String name()
 	{
-		return name;
+		return I18n.resolve(name);
 	}
 
 	public String fullName()
 	{
-		return fullName;
+		return I18n.resolve(fullName);
 	}
 
 	public double reactivity()
@@ -138,7 +128,7 @@ public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
 		info.add(InfoProviderNT.getNewline());
 		if (selfRate() > 0 || burnFunction() == EnumBurnFunction.SIGMOID)
 		{
-			info.add(new TextBuilder(I18n.resolve("fuel.selfIniting")).setStroke(Color.RED).getText());
+			info.add(new TextBuilder(I18n.resolve("fuel.selfIgniting")).setColor(Color.RED).getText());
 			info.add(InfoProviderNT.getNewline());
 		}
 		info.add(new Text(I18n.resolve("fuel.yield", yield)));
@@ -165,27 +155,6 @@ public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
 		info.add(InfoProviderNT.getNewline());
 		info.add(new Text(I18n.resolve("fuel.category", fuelCategory)));
 		info.add(InfoProviderNT.getNewline());
-	}
-	
-	@Override
-	public void funnelInto(PrimitiveSink sink)
-	{
-		sink
-		.putInt(burnFunction.ordinal())
-		.putInt(depleteFunction.ordinal())
-		.putDouble(diffusion)
-		.putInt(fuelCategory.ordinal())
-		.putString(fullName, UTF_8)
-		.putDouble(heatGen)
-		.putInt(inType.ordinal())
-		.putDouble(meltingPoint)
-		.putString(name, UTF_8)
-		.putInt(outType.ordinal())
-		.putDouble(reactivity)
-		.putDouble(selfRate)
-		.putDouble(xenonBurn)
-		.putDouble(xenonGen)
-		.putDouble(yield);
 	}
 	
 	@Override
@@ -218,14 +187,13 @@ public class RBMKFuelData implements InfoProviderNT, Hashable, Serializable
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKFuelDataImpl [reactivity=").append(reactivity).append(", meltingPoint=")
-				.append(meltingPoint).append(", yield=").append(yield).append(", selfRate=").append(selfRate)
-				.append(", xenonGen=").append(xenonGen).append(", xenonBurn=").append(xenonBurn).append(", heatGen=")
-				.append(heatGen).append(", diffusion=").append(diffusion).append(", name=").append(name)
-				.append(", fullName=").append(fullName).append(", burnFunction=").append(burnFunction)
-				.append(", depleteFunction=").append(depleteFunction).append(", inType=").append(inType)
-				.append(", outType=").append(outType).append(", fuelCategory=").append(fuelCategory).append(']');
-		return builder.toString();
+		String builder = "RBMKFuelDataImpl [reactivity=" + reactivity + ", meltingPoint=" +
+				meltingPoint + ", yield=" + yield + ", selfRate=" + selfRate +
+				", xenonGen=" + xenonGen + ", xenonBurn=" + xenonBurn + ", heatGen=" +
+				heatGen + ", diffusion=" + diffusion + ", name=" + name +
+				", fullName=" + fullName + ", burnFunction=" + burnFunction +
+				", depleteFunction=" + depleteFunction + ", inType=" + inType +
+				", outType=" + outType + ", fuelCategory=" + fuelCategory + ']';
+		return builder;
 	}
 }

@@ -1,56 +1,71 @@
 package org.uffr.rbmksim.simulation.bcolumns;
 
 import java.io.Serial;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javafx.scene.text.Text;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.GridLocation;
-import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
+import org.uffr.rbmksim.simulation.fuels.FuelType;
 import org.uffr.rbmksim.simulation.scolumns.RBMKFuel;
 
 import com.google.common.hash.PrimitiveSink;
+import org.uffr.rbmksim.util.I18n;
 
 import javax.annotation.Nullable;
 
+@SuppressWarnings("UnstableApiUsage")
 public class RBMKBlueprintFuel extends RBMKBlueprintColumn
 {
 	@Serial
 	private static final long serialVersionUID = -3585125936742359209L;
-	private RBMKFuelData fuelData;
+	private FuelType fuelType;
 	public RBMKBlueprintFuel(RBMKFuel column)
 	{
 		super(column);
-		fuelData = (column.getFuelRod().isPresent() ? column.getFuelRod().get().data : null);
+		fuelType = (column.getFuelRod().isPresent() ? column.getFuelRod().get().type : null);
 	}
 	
-	public RBMKBlueprintFuel(GridLocation location, ColumnType columnType, boolean moderated, RBMKFuelData fuelData)
+	public RBMKBlueprintFuel(GridLocation location, ColumnType columnType, boolean moderated, FuelType fuelType)
 	{
 		super(location, columnType, moderated);
-		this.fuelData = fuelData;
+		this.fuelType = fuelType;
+	}
+
+	@Override
+	public void addInformation(List<Text> info)
+	{
+		super.addInformation(info);
+		if (fuelType != null)
+			fuelType.data.addInformation(info);
+		else
+			info.add(new Text(I18n.resolve("column.type.fuel.empty")));
+	}
+
+	public void setFuelType(@Nullable FuelType fuelType)
+	{
+		this.fuelType = fuelType;
 	}
 	
-	public void setFuelData(@Nullable RBMKFuelData fuelData)
+	public Optional<FuelType> getFuelType()
 	{
-		this.fuelData = fuelData;
-	}
-	
-	public Optional<RBMKFuelData> getFuelData()
-	{
-		return Optional.ofNullable(fuelData);
+		return Optional.ofNullable(fuelType);
 	}
 	
 	@Override
 	public void reset()
 	{
-		fuelData = null;
+		fuelType = null;
 	}
 	
 	@Override
 	public void funnelInto(PrimitiveSink sink)
 	{
 		super.funnelInto(sink);
-		getFuelData().ifPresent(data -> data.funnelInto(sink));
+		if (fuelType != null)
+			sink.putInt(fuelType.ordinal());
 	}
 
 	@Override
@@ -58,7 +73,7 @@ public class RBMKBlueprintFuel extends RBMKBlueprintColumn
 	{
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + Objects.hash(fuelData);
+		result = prime * result + Objects.hash(fuelType);
 		return result;
 	}
 
@@ -71,17 +86,16 @@ public class RBMKBlueprintFuel extends RBMKBlueprintColumn
 			return false;
 		if (!(obj instanceof RBMKBlueprintFuel other))
 			return false;
-        return Objects.equals(fuelData, other.fuelData);
+        return Objects.equals(fuelType , other.fuelType);
 	}
 
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("BlueprintFuel [fuelData=").append(fuelData).append(", getLocation()=").append(getLocation())
-				.append(", getColumnType()=").append(getColumnType()).append(", isModerated()=").append(isModerated())
-				.append(']');
-		return builder.toString();
+		String builder = "BlueprintFuel [fuelData=" + fuelType + ", getLocation()=" + getLocation() +
+				", getColumnType()=" + getColumnType() + ", isModerated()=" + isModerated() +
+				']';
+		return builder;
 	}
 
 }

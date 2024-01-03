@@ -14,7 +14,7 @@ public class TextBuilder
 		BOLD("-fx-font-weight: bold;");
 
 		public final String id;
-		private FontStyle(String id)
+		FontStyle(String id)
 		{
 			this.id = id;
 		}
@@ -43,12 +43,13 @@ public class TextBuilder
 		return this;
 	}
 	
-	public TextBuilder setFill(Paint color)
+	public TextBuilder setColor(Paint color)
 	{
 		text.setFill(color);
 		return this;
 	}
-	
+
+	@Deprecated
 	public TextBuilder setStroke(Paint color)
 	{
 		text.setStroke(color);

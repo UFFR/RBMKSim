@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.hash.PrimitiveSink;
 
+@SuppressWarnings("UnstableApiUsage")
 public class SimulationConfig implements Config<SimulationConfig>, Hashable, Serializable, Cloneable
 {
 	@Serial
@@ -45,20 +46,20 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 	public static final boolean	REASIM_BOILERS			= false;
 	
 	/// Instance ///
-	public double passiveCooling = PASSIVE_COOLING,
-				  columnHeatFlow = COLUMN_HEAT_FLOW,
-				  fuelDiffusionMod = FUEL_DIFFUSION_MOD,
-				  heatProvision = HEAT_PROVISION,
-				  boilerHeatConsumption = BOILER_HEAT_CONSUMPTION,
-				  controlSpeedMod = CONTROL_SPEED_MOD,
-				  reactivityMod = REACTIVITY_MOD,
-				  outgasserMod = OUTGASSER_MOD,
-				  surgeMod = SURGE_MOD,
-				  reasimMod = REASIM_MOD,
-				  reasimBoilerSpeed = REASIM_BOILER_SPEED;
-	public int fluxRange = FLUX_RANGE,
-			   reasimRange = REASIM_RANGE,
-			   reasimCount = REASIM_COUNT;
+	public double passiveCooling = PASSIVE_COOLING;
+	public double columnHeatFlow = COLUMN_HEAT_FLOW;
+	public double fuelDiffusionMod = FUEL_DIFFUSION_MOD;
+	public double heatProvision = HEAT_PROVISION;
+	public double boilerHeatConsumption = BOILER_HEAT_CONSUMPTION;
+	public double controlSpeedMod = CONTROL_SPEED_MOD;
+	public double reactivityMod = REACTIVITY_MOD;
+	public double outgasserMod = OUTGASSER_MOD;
+	public double surgeMod = SURGE_MOD;
+	public double reasimMod = REASIM_MOD;
+	public double reasimBoilerSpeed = REASIM_BOILER_SPEED;
+	public int fluxRange = FLUX_RANGE;
+	public int reasimRange = REASIM_RANGE;
+	public int reasimCount = REASIM_COUNT;
 	public boolean reasimBoilers = REASIM_BOILERS;
 	
 	public SimulationConfig()
@@ -96,6 +97,7 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 		reactivityMod = config.get("reactivityMod").asDouble(REACTIVITY_MOD);
 		outgasserMod = config.get("outgasserMod").asDouble(OUTGASSER_MOD);
 		surgeMod = config.get("surgeMod").asDouble(SURGE_MOD);
+		reasimMod = config.get("reasimMod").asDouble(REASIM_MOD);
 		reasimBoilerSpeed = config.get("reasimBoilerSpeed").asDouble(REASIM_BOILER_SPEED);
 		fluxRange = config.get("fluxRange").asInt(FLUX_RANGE);
 		reasimRange = config.get("reasimRange").asInt(REASIM_RANGE);
@@ -117,6 +119,7 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 		reactivityMod = parseDouble(map.get("reactivityMod"), REACTIVITY_MOD, LOGGER::warn);
 		outgasserMod = parseDouble(map.get("outgasserMod"), OUTGASSER_MOD, LOGGER::warn);
 		surgeMod = parseDouble(map.get("surgeMod"), SURGE_MOD, LOGGER::warn);
+		reasimMod = parseDouble(map.get("reasimMod"), REASIM_MOD, LOGGER::warn);
 		reasimBoilerSpeed = parseDouble(map.get("reasimBoilerSpeed"), REASIM_BOILER_SPEED, LOGGER::warn);
 		fluxRange = parseInt(map.get("fluxRange"), FLUX_RANGE, LOGGER::warn);
 		reasimRange = parseInt(map.get("reasimRange"), reasimRange, LOGGER::warn);
@@ -136,6 +139,7 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 		this.reactivityMod = REACTIVITY_MOD;
 		this.outgasserMod = OUTGASSER_MOD;
 		this.surgeMod = SURGE_MOD;
+		this.reasimMod = REASIM_MOD;
 		this.reasimBoilerSpeed = REASIM_BOILER_SPEED;
 		this.fluxRange = FLUX_RANGE;
 		this.reasimRange = REASIM_RANGE;
@@ -171,25 +175,21 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 	@Override
 	public String asBasicConfig()
 	{
-		final StringBuilder builder = new StringBuilder(2000);
-		
-		builder
-		.append("passiveCooling=").append(passiveCooling).append('\n')
-		.append("columnHeatFlow=").append(columnHeatFlow).append('\n')
-		.append("fuelDiffusionMod=").append(fuelDiffusionMod).append('\n')
-		.append("heatProvision=").append(heatProvision).append('\n')
-		.append("boilerHeatConsumption=").append(boilerHeatConsumption).append('\n')
-		.append("controlSpeedMod=").append(controlSpeedMod).append('\n')
-		.append("reactivityMod=").append(reactivityMod).append('\n')
-		.append("outgasserMod=").append(outgasserMod).append('\n')
-		.append("surgeMod=").append(surgeMod).append('\n')
-		.append("reasimBoilerSpeed=").append(reasimBoilerSpeed).append('\n')
-		.append("fluxRange=").append(fluxRange).append('\n')
-		.append("reasimRange=").append(reasimRange).append('\n')
-		.append("reasimCount=").append(reasimCount).append('\n')
-		.append("reasimBoilers=").append(reasimBoilers).append('\n');
-		
-		return builder.toString();
+
+		return "passiveCooling=" + passiveCooling + '\n' +
+				"columnHeatFlow=" + columnHeatFlow + '\n' +
+				"fuelDiffusionMod=" + fuelDiffusionMod + '\n' +
+				"heatProvision=" + heatProvision + '\n' +
+				"boilerHeatConsumption=" + boilerHeatConsumption + '\n' +
+				"controlSpeedMod=" + controlSpeedMod + '\n' +
+				"reactivityMod=" + reactivityMod + '\n' +
+				"outgasserMod=" + outgasserMod + '\n' +
+				"surgeMod=" + surgeMod + '\n' +
+				"reasimBoilerSpeed=" + reasimBoilerSpeed + '\n' +
+				"fluxRange=" + fluxRange + '\n' +
+				"reasimRange=" + reasimRange + '\n' +
+				"reasimCount=" + reasimCount + '\n' +
+				"reasimBoilers=" + reasimBoilers + '\n';
 	}
 	
 	@Override
@@ -260,17 +260,15 @@ public class SimulationConfig implements Config<SimulationConfig>, Hashable, Ser
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("SimulationConfig [passiveCooling=").append(passiveCooling).append(", columnHeatFlow=")
-				.append(columnHeatFlow).append(", fuelDiffusionMod=").append(fuelDiffusionMod)
-				.append(", heatProvision=").append(heatProvision).append(", boilerHeatConsumption=")
-				.append(boilerHeatConsumption).append(", controlSpeedMod=").append(controlSpeedMod)
-				.append(", reactivityMod=").append(reactivityMod).append(", outgasserMod=").append(outgasserMod)
-				.append(", surgeMod=").append(surgeMod).append(", reasimMod=").append(reasimMod)
-				.append(", reasimBoilerSpeed=").append(reasimBoilerSpeed).append(", fluxRange=").append(fluxRange)
-				.append(", reasimRange=").append(reasimRange).append(", reasimCount=").append(reasimCount)
-				.append(", reasimBoilers=").append(reasimBoilers).append(']');
-		return builder.toString();
+		return "SimulationConfig [passiveCooling=" + passiveCooling + ", columnHeatFlow=" +
+				columnHeatFlow + ", fuelDiffusionMod=" + fuelDiffusionMod +
+				", heatProvision=" + heatProvision + ", boilerHeatConsumption=" +
+				boilerHeatConsumption + ", controlSpeedMod=" + controlSpeedMod +
+				", reactivityMod=" + reactivityMod + ", outgasserMod=" + outgasserMod +
+				", surgeMod=" + surgeMod + ", reasimMod=" + reasimMod +
+				", reasimBoilerSpeed=" + reasimBoilerSpeed + ", fluxRange=" + fluxRange +
+				", reasimRange=" + reasimRange + ", reasimCount=" + reasimCount +
+				", reasimBoilers=" + reasimBoilers + ']';
 	}
 	
 }

@@ -1,44 +1,25 @@
 package org.uffr.rbmksim.util;
 
-import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.uffr.rbmksim.main.Main;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.uffr.rbmksim.main.Main;
-import org.uffr.rbmksim.simulation.fuels.RBMKFuelData;
-
-import com.google.common.collect.ImmutableList;
+import java.util.function.Function;
 
 public class MiscUtil
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MiscUtil.class);
-	@Deprecated
-	public static StringExtractor<RBMKFuelData> fuelDataExtractor(RBMKFuelData data)
-	{
-		return new StringExtractor<RBMKFuelData>(data, RBMKFuelData::name);
-	}
-	
-	@Deprecated
-	public static List<StringExtractor<RBMKFuelData>> wrapDataList(List<RBMKFuelData> fuelDatas)
-	{
-		final List<StringExtractor<RBMKFuelData>> extractors = new ArrayList<StringExtractor<RBMKFuelData>>(fuelDatas.size());
-		for (RBMKFuelData data : fuelDatas)
-			extractors.add(fuelDataExtractor(data));
-		return ImmutableList.copyOf(extractors);
-	}
-	
+
 	/**
 	 * Convenience method to convert list of lines with '=' delimited key-value pairs into a {@link Map}.
 	 * @param config The string to read from.
@@ -54,7 +35,7 @@ public class MiscUtil
 			if (delimIndex > 1 || delimIndex < line.length() - 1)
 			{
 				key = line.substring(0, delimIndex);
-				value = line.substring(delimIndex + 1, line.length());
+				value = line.substring(delimIndex + 1);
 				
 				map.put(key, value);
 			}
@@ -130,18 +111,19 @@ public class MiscUtil
 	public static Path extractResource(String innerPath, String suffix) throws IOException
 	{
 		LOGGER.trace("Extracting resource [{}]...", innerPath);
-		try (final InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(innerPath))
+		try (final InputStream inputStream = Objects.requireNonNull(Main.class.getClassLoader().getResourceAsStream(innerPath), "Tried to read internal resource, not found!"))
 		{
 			final Path externalPath = Files.createTempFile("rbmksim-", suffix);
 			Files.copy(inputStream, externalPath, StandardCopyOption.REPLACE_EXISTING);
 			return externalPath;
 		}
 	}
-	
+
+	// TODO Move to library, possibly useful
 	@CheckForNull
-	public static Path fileToPathOrNull(@Nullable File file)
+	public static <T, U> U convertOrNull(@Nullable T obj , Function<T, U> converter)
 	{
-		return file == null ? null : file.toPath();
+		return obj == null ? null : converter.apply(obj);
 	}
 	
 }

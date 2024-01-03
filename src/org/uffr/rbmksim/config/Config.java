@@ -7,10 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author Basic interface for configurations.
  *
  * @param <T> The configuration class, for {@link #copy(T)}.
- * 
- * @deprecated Use {@link ConfigNT}
  */
-@Deprecated
+// TODO Rework to use library
 public interface Config<T>
 {
 	/**
@@ -18,29 +16,29 @@ public interface Config<T>
 	 * @param config The configuration to copy.
 	 * @return Itself, for convenience
 	 */
-	public T copy(T config);
+	T copy(T config);
 	/**
 	 * Load fields from saved JSON.
 	 * @param config The JSON to read from. Generated from {@link #asJsonConfig()}.
 	 */
-	public void fromJson(JsonNode config);
+	void fromJson(JsonNode config);
 	/**
 	 * Loads fields from a basic '=' delimited key-value list.
 	 * @param config The string to read from. Generated from {@link #asBasicConfig()}.
 	 */
-	public void fromBasic(String config);
+	void fromBasic(String config);
 	/**
 	 * Reset all fields to their default values.
 	 */
-	public void resetToDefault();
+	void resetToDefault();
 	/**
 	 * Save current state as JSON. May be used in {@link #fromJson(JsonNode)}.
 	 * @return The JSON representing the current state.
 	 */
-	public JsonNode asJsonConfig();
+	JsonNode asJsonConfig();
 	/**
 	 * Save current state as string. May be used in {@link #fromBasic(String)}.
 	 * @return The string representing the current state.
 	 */
-	public String asBasicConfig();
+	String asBasicConfig();
 }

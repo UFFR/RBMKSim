@@ -10,7 +10,7 @@ public enum FuelCategory
 	ZFB("fuel.category.zfb"),
 	FICTIONAL("fuel.category.fictional");
 	public final String uloc;
-	private FuelCategory(String uloc)
+	FuelCategory(String uloc)
 	{
 		this.uloc = uloc;
 	}

@@ -14,6 +14,7 @@ import com.google.common.hash.PrimitiveSink;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class RBMKControl extends RBMKSimColumnBase
 {
 	public enum ControlRodColor

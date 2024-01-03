@@ -99,36 +99,6 @@ public class RBMKBlueprint extends RBMKFrame
 					continue;
 				}
 			}
-//			if (column.getHeat() != 20)
-//			{
-//				discrepancies.add("Column at " + loc + " has a heat level of " + column.getHeat() + ", which should not be possible for a blueprint.");
-//				if (repair)
-//				{
-//					column.reset();
-//					continue;
-//				}
-//			}
-//			if (config.reasimBoilers)
-//			{
-//				if (column.getWater() != 0)
-//				{
-//					discrepancies.add("Column at " + loc + " has a water level of " + column.getWater() + ", which should not be possible for a blueprint.");
-//					if (repair)
-//					{
-//						column.reset();
-//						continue;
-//					}
-//				}
-//				if (column.getSteam() != 0)
-//				{
-//					discrepancies.add("Column at " + loc + " has a steam level of " + column.getSteam() + ", which should not be possible for a blueprint.");
-//					if (repair)
-//					{
-//						column.reset();
-//						continue;
-//					}
-//				}
-//			}
 		}
 	}
 	
@@ -189,12 +159,11 @@ public class RBMKBlueprint extends RBMKFrame
 	public String toString()
 	{
 		final int maxLen = 10;
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKBlueprint [config=").append(config).append(", grid=").append(grid)
-				.append(", registeredLocations=")
-				.append(registeredLocations != null ? toString(registeredLocations) : null).append(", rows=")
-				.append(rows).append(", columns=").append(columns).append(']');
-		return builder.toString();
+		String builder = "RBMKBlueprint [config=" + config + ", grid=" + grid +
+				", registeredLocations=" +
+				(registeredLocations != null ? toString(registeredLocations) : null) + ", rows=" +
+				rows + ", columns=" + columns + ']';
+		return builder;
 	}
 	
 	private static String toString(Collection<?> collection)

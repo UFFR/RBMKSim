@@ -2,35 +2,45 @@ package org.uffr.rbmksim.simulation.fuels;
 
 import static org.uffr.uffrlib.math.MathUtil.sigFigRounding;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-
+import com.google.common.hash.PrimitiveSink;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.uffr.rbmksim.main.Main;
 import org.uffr.rbmksim.util.I18n;
 import org.uffr.rbmksim.util.InfoProviderNT;
 import org.uffr.rbmksim.util.TextBuilder;
 import org.uffr.uffrlib.hashing.Hashable;
 
-import com.google.common.hash.HashCode;
-import com.google.common.hash.PrimitiveSink;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
 
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-
-public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Cloneable
+@SuppressWarnings("UnstableApiUsage")
+public sealed class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Cloneable permits RBMKFuelDRX
 {
 	@Serial
 	private static final long serialVersionUID = -9197159590599662941L;
-	public static final int defaultYield = 100_000_000;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKFuelRod.class);
 	protected double xenon = 0, hullHeat = 20, coreHeat = 20, remainingYield;
-	public transient final RBMKFuelData data;
-	public RBMKFuelRod(RBMKFuelData data)
+	public final FuelType type;
+	public RBMKFuelRod(FuelType type)
 	{
-		this.data = data;
-		remainingYield = data.getYield();
+		this.type = type;
+		remainingYield = type.data.getYield();
 	}
-	
+
+	public RBMKFuelRod(RBMKFuelRod other)
+	{
+		this.xenon = other.xenon;
+		this.hullHeat = other.hullHeat;
+		this.coreHeat = other.coreHeat;
+		this.remainingYield = other.remainingYield;
+		this.type = other.type;
+	}
+
 	public static double reactivityModByEnrichment(RBMKFuelData data, double enrichment)
 	{
         return switch (data.depleteFunction())
@@ -56,60 +66,60 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 	@Override
 	public void addInformation(List<Text> info)
 	{
-		info.add(new Text(I18n.resolve(data.name())));
+		info.add(new Text(type.data.name()));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve(data.fullName())));
+		info.add(new Text(type.data.fullName()));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.reactivity", data.reactivity())));
+		info.add(new Text(I18n.resolve("fuel.reactivity", type.data.reactivity())));
 		info.add(InfoProviderNT.getNewline());
-		if (data.selfRate() > 0 || data.burnFunction() == EnumBurnFunction.SIGMOID)
+		if (type.data.selfRate() > 0 || type.data.burnFunction() == EnumBurnFunction.SIGMOID)
 		{
-			info.add(new TextBuilder(I18n.resolve("fuel.selfIniting")).setStroke(Color.RED).getText());
+			info.add(new TextBuilder(I18n.resolve("fuel.selfIniting")).setColor(Color.RED).getText());
 			info.add(InfoProviderNT.getNewline());
 		}
-		info.add(new Text(I18n.resolve("fuel.depletion", sigFigRounding((remainingYield / data.getYield()) * 100, 5, 0))));
+		info.add(new Text(I18n.resolve("fuel.depletion", sigFigRounding((remainingYield / type.data.getYield()) * 100, 5, 0))));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.fluxFunction", getFunctionDesc(data, getEnrichment()))));
+		info.add(new Text(I18n.resolve("fuel.fluxFunction", getFunctionDesc(type.data, getEnrichment()))));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.functionType", data.burnFunction().title)));
+		info.add(new Text(I18n.resolve("fuel.functionType", type.data.burnFunction().title)));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.depletionFunction", data.depleteFunction())));
+		info.add(new Text(I18n.resolve("fuel.depletionFunction", type.data.depleteFunction())));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.selfRate", data.selfRate())));
+		info.add(new Text(I18n.resolve("fuel.selfRate", type.data.selfRate())));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new TextBuilder(I18n.resolve("fuel.xenonGen", data.xenonGen())).setStroke(Color.PURPLE).getText());
+		info.add(new TextBuilder(I18n.resolve("fuel.xenonGen", type.data.xenonGen())).setColor(Color.PURPLE).getText());
 		info.add(InfoProviderNT.getNewline());
-		info.add(new TextBuilder(I18n.resolve("fuel.xenonBurn", data.xenonBurn())).setStroke(Color.PURPLE).getText());
+		info.add(new TextBuilder(I18n.resolve("fuel.xenonBurn", type.data.xenonBurn())).setColor(Color.PURPLE).getText());
 		info.add(InfoProviderNT.getNewline());
 		info.add(new Text(I18n.resolve("fuel.xenon", sigFigRounding(xenon, 4, 0))));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.heatGen", data.heatGen())));
+		info.add(new Text(I18n.resolve("fuel.heatGen", type.data.heatGen())));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.meltingPoint", data.meltingPoint())));
+		info.add(new Text(I18n.resolve("fuel.meltingPoint", type.data.meltingPoint())));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.diffusion", data.diffusion())));
+		info.add(new Text(I18n.resolve("fuel.diffusion", type.data.diffusion())));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.neutronIn", data.receiveType())));
+		info.add(new Text(I18n.resolve("fuel.neutronIn", type.data.receiveType())));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.neutronOut", data.returnType())));
+		info.add(new Text(I18n.resolve("fuel.neutronOut", type.data.returnType())));
 		info.add(InfoProviderNT.getNewline());
 		info.add(new Text(I18n.resolve("fuel.hullHeat", sigFigRounding(hullHeat, 2, 0))));
 		info.add(InfoProviderNT.getNewline());
 		info.add(new Text(I18n.resolve("fuel.coreHeat", sigFigRounding(coreHeat, 2, 0))));
 		info.add(InfoProviderNT.getNewline());
-		info.add(new Text(I18n.resolve("fuel.meltingPoint", data.meltingPoint())));
+		info.add(new Text(I18n.resolve("fuel.meltingPoint", type.data.meltingPoint())));
 		info.add(InfoProviderNT.getNewline());
 	}
 	
 	public double getEnrichment()
 	{
-		return remainingYield / data.getYield();
+		return remainingYield / type.data.getYield();
 	}
 	
 	public double burn(double inbound)
 	{
 		double inboundCopy = inbound;
-		inboundCopy += data.selfRate();
+		inboundCopy += type.data.selfRate();
 		inboundCopy *= 1d - (xenon / 100);
 		
 		double outbound = getReactivity(inboundCopy);
@@ -122,7 +132,7 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 		remainingYield -= inboundCopy;
 		if (remainingYield < 0) remainingYield = 0;
 		
-		coreHeat += outbound * data.heatGen();
+		coreHeat += outbound * type.data.heatGen();
 		
 		return outbound;
 	}
@@ -132,14 +142,14 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 		if (coreHeat > hullHeat)
 		{
 			final double mid = (coreHeat - hullHeat) / 2d;
-			coreHeat -= mid * data.diffusion() * mod;
-			hullHeat += mid * data.diffusion() * mod;
+			coreHeat -= mid * type.data.diffusion() * mod;
+			hullHeat += mid * type.data.diffusion() * mod;
 		}
 	}
 	
 	public double provideHeat(double heat, double mod)
 	{
-		if (hullHeat > data.meltingPoint())
+		if (hullHeat > type.data.meltingPoint())
 		{
 			final double avg = (heat + coreHeat + hullHeat) / 3d;
 			coreHeat = avg;
@@ -158,26 +168,26 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 	
 	protected double getReactivity(double inFlux)
 	{
-		double flux = inFlux * reactivityModByEnrichment(data, getEnrichment());
+		double flux = inFlux * reactivityModByEnrichment(type.data, getEnrichment());
 
-        return switch (data.burnFunction())
+        return switch (type.data.burnFunction())
         {
-            case PASSIVE -> data.selfRate() + getEnrichment();
-            case LOG_TEN -> Math.log10(flux + 1) * 0.5 * data.reactivity();
-            case PLATEU -> (1 - Math.pow(Math.E, -flux / 25d)) * data.reactivity();
-            case ARCH -> Math.max((flux - (flux * flux / 10000d)) / 100d * data.reactivity(), 0);
-            case SIGMOID -> data.reactivity() / (1 + Math.pow(Math.E, -(flux - 50) / 10d));
-            case SQUARE_ROOT -> Math.sqrt(flux) * data.reactivity() / 10d;
-            case LINEAR -> flux / 100d * data.reactivity();
-            case QUADRATIC -> flux * flux / 10000d * data.reactivity();
-            case EXPERIMENTAL -> flux * (Math.sin(flux) + 1) * data.reactivity();
+            case PASSIVE -> type.data.selfRate() + getEnrichment();
+            case LOG_TEN -> Math.log10(flux + 1) * 0.5 * type.data.reactivity();
+            case PLATEU -> (1 - Math.pow(Math.E, -flux / 25d)) * type.data.reactivity();
+            case ARCH -> Math.max((flux - (flux * flux / 10000d)) / 100d * type.data.reactivity(), 0);
+            case SIGMOID -> type.data.reactivity() / (1 + Math.pow(Math.E, -(flux - 50) / 10d));
+            case SQUARE_ROOT -> Math.sqrt(flux) * type.data.reactivity() / 10d;
+            case LINEAR -> flux / 100d * type.data.reactivity();
+            case QUADRATIC -> flux * flux / 10000d * type.data.reactivity();
+            case EXPERIMENTAL -> flux * (Math.sin(flux) + 1) * type.data.reactivity();
             default -> 0;
         };
 	}
 	
 	protected double xenonBurn(double flux)
 	{
-		return (flux * flux) / data.xenonBurn();
+		return (flux * flux) / type.data.xenonBurn();
 	}
 	
 	public double getXenon()
@@ -205,12 +215,17 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 		hullHeat = 20;
 		coreHeat = 20;
 		xenon = 0;
-		remainingYield = data.getYield();
+		remainingYield = type.data.getYield();
 	}
-	
+
+	public final void setYield(double yield)
+	{
+		remainingYield = yield;
+	}
+
 	public final void resetYield()
 	{
-		remainingYield = data.getYield();
+		remainingYield = type.data.getYield();
 	}
 	
 	@Override
@@ -222,7 +237,7 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(coreHeat, data, hullHeat, remainingYield, xenon);
+		return Objects.hash(coreHeat, type, hullHeat, remainingYield, xenon);
 	}
 
 	@Override
@@ -233,7 +248,7 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 		if (!(obj instanceof RBMKFuelRod other))
 			return false;
         return Double.doubleToLongBits(coreHeat) == Double.doubleToLongBits(other.coreHeat)
-				&& Objects.equals(data, other.data)
+				&& type == other.type
 				&& Double.doubleToLongBits(hullHeat) == Double.doubleToLongBits(other.hullHeat)
 				&& Double.doubleToLongBits(remainingYield) == Double.doubleToLongBits(other.remainingYield)
 				&& Double.doubleToLongBits(xenon) == Double.doubleToLongBits(other.xenon);
@@ -242,10 +257,23 @@ public class RBMKFuelRod implements InfoProviderNT, Hashable, Serializable, Clon
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RBMKFuelRod [xenon=").append(xenon).append(", hullHeat=").append(hullHeat).append(", coreHeat=")
-				.append(coreHeat).append(", remainingYield=").append(remainingYield).append(", data=").append(data)
-				.append(']');
-		return builder.toString();
+		String builder = "RBMKFuelRod [xenon=" + xenon + ", hullHeat=" + hullHeat + ", coreHeat=" +
+				coreHeat + ", remainingYield=" + remainingYield + ", type=" + type +
+				']';
+		return builder;
+	}
+
+	@Override
+	public RBMKFuelRod clone()
+	{
+		try
+		{
+			return (RBMKFuelRod) super.clone();
+		} catch (CloneNotSupportedException e)
+		{
+			LOGGER.error("Could not clone RBMKFuelRod, this should not be possible!", e);
+			Main.openErrorDialog(e);
+			return new RBMKFuelRod(this);
+		}
 	}
 }

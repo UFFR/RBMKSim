@@ -16,17 +16,17 @@ import com.google.common.hash.PrimitiveSink;
 
 import javafx.scene.canvas.GraphicsContext;
 
+@SuppressWarnings("UnstableApiUsage")
 public class RBMKBlueprintColumn extends RBMKColumnBase
 {
 	@Serial
 	private static final long serialVersionUID = -1620510951364863121L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBMKBlueprintColumn.class);
 	public static final Funnel<RBMKBlueprintColumn> FUNNEL = (col, sink) ->
-	{
-		sink.putInt(col.getColumnType().ordinal()).putInt(col.getLocation().x()).putInt(col.getLocation().y()).putBoolean(col.isModerated());
-	};
+			sink.putInt(col.getColumnType().ordinal()).putInt(col.getLocation().x()).putInt(col.getLocation().y()).putBoolean(col.isModerated());
 	
 	private final ColumnType columnType;
+	// I can't remember what this was for
 	@Deprecated
 	private final boolean moderated;
 	public RBMKBlueprintColumn(RBMKSimColumnBase columnBase)
@@ -97,9 +97,8 @@ public class RBMKBlueprintColumn extends RBMKColumnBase
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("BlueprintColumn [columnType=").append(columnType).append(", moderated=").append(moderated)
-				.append(']');
-		return builder.toString();
+		String builder = "BlueprintColumn [columnType=" + columnType + ", moderated=" + moderated +
+				']';
+		return builder;
 	}
 }

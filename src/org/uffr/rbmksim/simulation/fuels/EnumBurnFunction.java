@@ -13,7 +13,7 @@ public enum EnumBurnFunction
 	EXPERIMENTAL("EXPERIMENTAL / SINE SLOPE", "%1$s * (sin(%1$s) + 1) * %2$s");		//x * (sin(x) + 1)
 	
 	public final String title, format;
-	private EnumBurnFunction(String title, String format)
+	EnumBurnFunction(String title, String format)
 	{
 		this.title = title;
 		this.format = format;

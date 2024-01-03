@@ -2,17 +2,18 @@ package org.uffr.rbmksim.simulation.fuels;
 
 public class RBMKFuelBuilder
 {
+	public static final int DEFAULT_YIELD = 100_000_000;
 	private final double reactivity, meltingPoint;
-	private double yield = 100_000_000, selfRate = 0, xenonGen = 0.5, xenonBurn = 50, heatGen = 1, diffusion = 0.2;
+	private double yield = DEFAULT_YIELD, selfRate = 0, xenonGen = 0.5, xenonBurn = 50, heatGen = 1, diffusion = 0.2;
 	private final String name, fullName;
 	private EnumBurnFunction burnFunction = EnumBurnFunction.LOG_TEN;
 	private EnumDepleteFunction depleteFunction = EnumDepleteFunction.GENTLE_SLOPE;
 	private NeutronType inType = NeutronType.SLOW, outType = NeutronType.FAST;
 	private FuelCategory fuelCategory = FuelCategory.REAL;
-	public RBMKFuelBuilder(String name, String fullName, double reactivity, double meltingPoint, double selfRate)
+	public RBMKFuelBuilder(String name, double reactivity, double meltingPoint, double selfRate)
 	{
 		this.name = "fuel.type.name." + name;
-		this.fullName = "fuel.type.desc." + fullName;
+		this.fullName = "fuel.type.desc." + name;
 		this.reactivity = reactivity;
 		this.meltingPoint = meltingPoint;
 		this.selfRate = selfRate;

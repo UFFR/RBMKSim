@@ -26,27 +26,22 @@ public class Main extends Application
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	// Useful for tracking discrepancies between saved files and the currently running program. Doesn't track metadata due to how I calculate it though.
-	private static final Version VERSION = new Version(0, 5, 3, "SNAPSHOT");
+	private static final Version VERSION = new Version(0, 5, 4, "SNAPSHOT");
 	// Basic strings reused in various places.
 	public static final String EXT_BPRINT = "*.rbmk",
 							   EXT_RSIM   = "*.rsim";
 	public static final boolean LINUX = System.getProperty("os.name").contains("Linux");
 	public static final Path
 							USER_PATH = Path.of(System.getProperty("user.home")),// TODO Change if it causes the program to explode
-							CONFIG_PATH = LINUX ? Path.of(System.getProperty("user.home"), ".config", "rbmksim") : Path.of("%APPDATA%", "rbmksim"),// TODO Ditto
-							TEMP_PATH = LINUX ? Path.of("/", "tmp") : Path.of("%TEMP%");
+							CONFIG_PATH = LINUX ? Path.of(System.getProperty("user.home"), ".config", "rbmksim") : Path.of("%APPDATA%", "rbmksim");// TODO Ditto
 	// Icon of the program.
 	public static final Image ICON_IMAGE = new Image(Objects.requireNonNull(Main.class.getClassLoader().getResourceAsStream("resources/rad.png")));
 	
-	// The current frame.
-//	protected static Optional<RBMKFrame> frame = Optional.empty();
-	protected static FrameRunner runner = new FrameRunner();
+	protected static final FrameRunner RUNNER = new FrameRunner();
 	public static ProgramConfig config = new ProgramConfig();
 	// JavaFX stage
 	private static Stage stage;
-	// If the simulation is running, paused otherwise.
-//	private static boolean running = false;
-	
+
 	public static void main(String[] args)
 	{
 		LOGGER.debug("Entry point begun, launching...");
@@ -59,8 +54,8 @@ public class Main extends Application
 		LOGGER.info("Starting application...");
 		Thread.setDefaultUncaughtExceptionHandler((t, e) ->
 		{
-			LOGGER.warn("Uncaught exception in program in {}", t);
-			LOGGER.warn("Stack trace:", e);
+			LOGGER.error("Uncaught exception in program in {}", t);
+			LOGGER.error("Stack trace:", e);
 			openErrorDialog(e);
 		});
 		stage = primaryStage;
@@ -80,28 +75,28 @@ public class Main extends Application
 	public static void setRunning(boolean running)
 	{
 //		Main.running = running;
-		runner.setActive(running);
+		RUNNER.setActive(running);
 		// TODO Some kind of trigger to initiate the simulation again.
 	}
 	
 	public static boolean isRunning()
 	{
-		return runner.isActive();
+		return RUNNER.isActive();
 	}
 	
 	public static Optional<RBMKFrame> getFrame()
 	{
-		return runner.getFrame();
+		return RUNNER.getFrame();
 	}
 	
 	public static void setFrame(@Nullable RBMKFrame frame)
 	{
-		runner.setFrame(frame);
+		RUNNER.setFrame(frame);
 	}
 	
 	public static void closeFrame()
 	{
-		runner.close();
+		RUNNER.close();
 		setFrame(null);
 	}
 	
@@ -141,22 +136,21 @@ public class Main extends Application
 	public static String getAboutString()
 	{
 		LOGGER.debug("Main.getAboutString() triggered");
-		final StringBuilder builder = new StringBuilder(100);
-		builder
-		.append(I18n.resolve("about.author")).append('\n')
-		.append(I18n.resolve("about.version", VERSION)).append('\n')
-		.append(I18n.resolve("about.company")).append('\n')
-		.append(I18n.resolve("about.license"));
-		return builder.toString();
+		return I18n.resolve("about.author") + '\n' +
+				I18n.resolve("about.version" , VERSION) + '\n' +
+				I18n.resolve("about.company") + '\n' +
+				I18n.resolve("about.license");
 	}
 	
 	public static String getCreditsString()
 	{
 		// TODO Finish credits
 		LOGGER.debug("Main.getCreditsString() triggered");
-		final StringBuilder builder = new StringBuilder(200);
-		builder
-		.append('\u2022').append(I18n.resolve("credits.java"));
-		return builder.toString();
+		return '•' + I18n.resolve("credits.javafx") + '\n' +
+				'•' + I18n.resolve("credits.ntm") + '\n' +
+				'•' + I18n.resolve("credits.slf4j") + '\n' +
+				'•' + I18n.resolve("credits.logback") + '\n' +
+				'•' + I18n.resolve("credits.guava") + '\n' +
+				'•' + I18n.resolve("credits.java");
 	}
 }

@@ -7,9 +7,9 @@ import java.util.List;
 @FunctionalInterface
 public interface InfoProvider
 {
-	public void addInformation(List<String> info);
+	void addInformation(List<String> info);
 	
-	public default String asProperString()
+	default String asProperString()
 	{
 		final List<String> info = new ArrayList<>();
 		addInformation(info);

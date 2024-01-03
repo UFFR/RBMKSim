@@ -4,7 +4,7 @@
   <groupId>org.uffr.rbmksim</groupId>
   <artifactId>rbmksim</artifactId>
   <name>RBMKSim</name>
-  <version>0.5.3-SNAPSHOT</version>
+  <version>0.5.4-SNAPSHOT</version>
   <description>RBMK designer and simulator for the Minecraft mod: Hbm's Nuclear Tech Mod</description>
   <url>https://github.com/UFFR/RBMKSim</url>
   <organization>
@@ -104,6 +104,15 @@
       </plugin>
     </plugins>
   </build>
+  <dependencies>
+    <dependency>
+      <groupId>io.smallrye</groupId>
+      <artifactId>smallrye-config</artifactId>
+      <version>3.5.2-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/dependencies/smallrye-config-core-3.5.2-SNAPSHOT.jar</systemPath>
+    </dependency>
+  </dependencies>
   <properties>
     <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.source>21</maven.compiler.source>

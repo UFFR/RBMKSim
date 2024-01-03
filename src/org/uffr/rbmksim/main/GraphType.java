@@ -11,7 +11,7 @@ public enum GraphType
 	COOLANT("coolant");
 	
 	public final String uloc;
-	private GraphType(String uloc)
+	GraphType(String uloc)
 	{
 		this.uloc = "app.graphType." + uloc;
 	}

@@ -20,7 +20,7 @@ public enum ColumnType
 	HEATEX(false, "heatEx");
 	public final boolean hasGUI;
 	public final String uloc;
-	private ColumnType(boolean hasGUI, String uloc)
+	ColumnType(boolean hasGUI, String uloc)
 	{
 		this.hasGUI = hasGUI;
 		this.uloc = "column.type." + uloc;

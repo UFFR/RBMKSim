@@ -2,17 +2,8 @@ package org.uffr.rbmksim.main;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.hash.PrimitiveSink;
+import javafx.scene.canvas.Canvas;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.config.SimulationConfig;
@@ -26,10 +17,11 @@ import org.uffr.uffrlib.collections.matrix.Matrix;
 import org.uffr.uffrlib.hashing.Hashable;
 import org.uffr.uffrlib.misc.Version;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.hash.PrimitiveSink;
-
-import javafx.scene.canvas.Canvas;
+import javax.annotation.Nullable;
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * Base RBMK class.
@@ -46,6 +38,7 @@ import javafx.scene.canvas.Canvas;
  * @author UFFR
  *
  */
+@SuppressWarnings("ALL")
 public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 {
 	@Serial
@@ -72,7 +65,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	// Timer for adding nodes to the graph, for performance
 	protected transient int graphTimer;
 	// Selected column
-	protected static Optional<GridLocation> selectedLocation = Optional.empty();
+	protected static GridLocation selectedLocation = null;
 	
 	public RBMKFrame(Canvas canvas)
 	{
@@ -162,7 +155,7 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	@SuppressWarnings("static-method")
 	public void tick()
 	{
-		LOGGER.trace("RBMKFrame ticked...");
+		LOGGER.trace("Ticked...");
 		// We can be pretty sure registeredLocations is valid.
 //		for (GridLocation location : registeredLocations)
 //			getColumnAtCoords(location).render(location.getX(), location.getY(), canvas.getGraphicsContext2D());
@@ -171,11 +164,15 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	public void render()
 	{
-		LOGGER.trace("RBMKFrame.render() called...");
+		LOGGER.trace("render() called...");
 		grid.stream().filter(Objects::nonNull).filter(RBMKColumnBase::shouldRender).forEach(getRenderer()::renderColumn);
-//		for (RBMKColumnBase col : grid)
-//			if (col != null && col.shouldRender())
-//				getRenderer().renderColumn(col);
+		renderer.flush();
+	}
+
+	public void forceRender()
+	{
+		LOGGER.trace("forceRender() called...");
+		grid.stream().filter(Objects::nonNull).forEach(getRenderer()::renderColumn);
 		renderer.flush();
 	}
 	
@@ -458,21 +455,21 @@ public abstract class RBMKFrame implements Hashable, Serializable, Cloneable
 	
 	/**
 	 * Get the set of registered locations in the matrix.
-	 * @return An immutable copy of the set.
+	 * @return An unmodifiable copy of the set.
 	 */
 	public Set<GridLocation> getRegisteredLocations()
 	{
-		return ImmutableSet.copyOf(registeredLocations);
+		return Collections.unmodifiableSet(registeredLocations);
 	}
 	
-	public Optional<GridLocation> getSelectedLocation()
+	public static Optional<GridLocation> getSelectedLocation()
 	{
-		return selectedLocation;
+		return Optional.ofNullable(selectedLocation);
 	}
 	
-	public void setSelectedLocation(Optional<GridLocation> selectedLocation)
+	public void setSelectedLocation(GridLocation selectedLocation)
 	{
-		renderer.selectedLocation = RBMKFrame.selectedLocation = RBMKFrame.selectedLocation.equals(selectedLocation) || (selectedLocation.isPresent() && invalidCoords(selectedLocation.get())) ? Optional.empty() : selectedLocation;
+		renderer.selectedLocation = RBMKFrame.selectedLocation = Objects.equals(RBMKFrame.selectedLocation, selectedLocation) || (selectedLocation != null && invalidCoords(selectedLocation)) ? null : selectedLocation;
 	}
 	
 	@Override

@@ -1,7 +1,18 @@
 package org.uffr.rbmksim.config;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.uffr.rbmksim.main.Main.*;
+import static org.uffr.rbmksim.main.Main.CONFIG_PATH;
+import static org.uffr.rbmksim.main.Main.USER_PATH;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.hash.PrimitiveSink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.uffr.rbmksim.main.Main;
+import org.uffr.rbmksim.util.MiscUtil;
+import org.uffr.uffrlib.hashing.Hashable;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -13,40 +24,24 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
-import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
-import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.uffr.rbmksim.main.Main;
-import org.uffr.rbmksim.util.MiscUtil;
-import org.uffr.uffrlib.hashing.Hashable;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.hash.PrimitiveSink;
-
-public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializable, Cloneable, ConfigNT
+@SuppressWarnings("UnstableApiUsage")
+public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializable, Cloneable
 {
 	@Serial
 	private static final long serialVersionUID = 2581161401492824888L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramConfig.class);
+	public static final Path PROGRAM_CONFIG_PATH = CONFIG_PATH.resolve("programConfig.json");
 	/// Defaults ///
 	public static final Locale LOCALE = Locale.getDefault();
 	public static final String USERNAME = System.getProperty("user.name");
-	public static final byte TICK_DELAY = 0;
+	public static final byte TICK_DELAY = 50;
 	
 	/// Instance ///
 	public Locale locale = LOCALE;// I18n usage.
-	public Path userPath = USER_PATH,// Default path for blueprints and simulations.
-				configPath = CONFIG_PATH;// Path where all configurations, including this one, are held.
+	public Path userPath = USER_PATH;// Default path for blueprints and simulations.
+	public Path configPath = CONFIG_PATH;// Path where all configurations, including this one, are held.
 	public String username = USERNAME;// Name that is used to credit the creator of blueprints and simulations created.
-	public int tickDelay = TICK_DELAY;// Additional delay between MC ticks while the program runs, to slow down execution.
+	public int tickDelay = TICK_DELAY;// Delay between ticks in milliseconds while the program runs, to slow down execution.
 	
 	static
 	{
@@ -62,7 +57,37 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	}
 	
 	public ProgramConfig()
-	{}
+	{
+		LOGGER.info("Creating new ProgramConfig instance...");
+		if (Files.notExists(PROGRAM_CONFIG_PATH))
+		{
+			LOGGER.info("Config file doesn't exist yet, creating...");
+			try
+			{
+				LOGGER.trace("Writing defaults to file...");
+				Files.writeString(PROGRAM_CONFIG_PATH, asJsonConfig().toPrettyString());
+			} catch (IOException e)
+			{
+				LOGGER.error("Unable to create initial configuration file!", e);
+				Main.openErrorDialog(e);
+			}
+		} else
+		{
+			LOGGER.info("Reading saved configuration...");
+			try
+			{
+				final byte[] data = Files.readAllBytes(PROGRAM_CONFIG_PATH);
+
+				LOGGER.trace("Parsing JSON...");
+				final ObjectMapper mapper = new ObjectMapper();
+				fromJson(mapper.readTree(data));
+			} catch (IOException e)
+			{
+				LOGGER.error("Unable to read/parse configuration file!", e);
+				Main.openErrorDialog(e);
+			}
+		}
+	}
 
 	@Override
 	public void funnelInto(PrimitiveSink sink)
@@ -83,24 +108,6 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	}
 
 	@Override
-	public Configuration constructDefaults() throws ConfigurationException
-	{
-		// TODO Auto-generated method stub
-		final Parameters params = new Parameters();
-		final BasicConfigurationBuilder<PropertiesConfiguration> builder =
-				new BasicConfigurationBuilder<>(PropertiesConfiguration.class)
-					.configure(params.basic().setListDelimiterHandler(new DefaultListDelimiterHandler(',')).setThrowExceptionOnMissing(true));
-		final PropertiesConfiguration config = builder.getConfiguration();
-		config.addProperty("locale", locale.toString());
-		config.addProperty("configPath", configPath);
-		config.addProperty("userPath", userPath);
-		config.addProperty("username", username);
-		config.addProperty("tickDelay", tickDelay);
-		
-		return config;
-	}
-	
-	@Override
 	public ProgramConfig copy(ProgramConfig config)
 	{
 		this.locale = config.locale;
@@ -114,20 +121,10 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	@Override
 	public void fromJson(JsonNode config)
 	{
+		LOGGER.debug("Parsing JSON for configuration options");
 		locale = Locale.forLanguageTag(config.get("locale").asText(LOCALE.getLanguage()));
 		
-		final JsonNode cPathNode = config.get("configPath");
-		final String[] cPaths = new String[cPathNode.size()];
-		for (int i = 0; i < cPaths.length; i++)
-			cPaths[i] = cPathNode.get(i).asText();
-		
-		final JsonNode uPathNode = config.get("userPath");
-		final String[] uPaths = new String[uPathNode.size()];
-		for (int i = 0; i < uPaths.length; i++)
-			uPaths[i] = uPathNode.get(i).asText();
-		
-		configPath = Path.of("", cPaths);
-		userPath = Path.of("", uPaths);
+		userPath = config.has("userPath") ? Path.of(config.get("userPath").asText(USER_PATH.toString())) : USER_PATH;
 		username = config.get("username").asText(USERNAME);
 		tickDelay = config.get("tickDelay").asInt(TICK_DELAY);
 	}
@@ -156,23 +153,15 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	@Override
 	public JsonNode asJsonConfig()
 	{
+		LOGGER.debug("Writing config to JSON...");
 		final ObjectMapper mapper = new ObjectMapper();
 		final ObjectNode rootNode = mapper.createObjectNode();
-		
+
 		rootNode
 		.put("locale", locale.getLanguage())
 		.put("username", username)
-		.put("tickDelay", tickDelay);
-		
-		final Path cPath = configPath.toAbsolutePath(), uPath = userPath.toAbsolutePath();
-		
-		final ArrayNode cPathNode = rootNode.arrayNode(cPath.getNameCount());
-		final ArrayNode uPathNode = rootNode.arrayNode(uPath.getNameCount());
-		
-		for (Path p : cPath)
-			cPathNode.add(p.toString());
-		for (Path p : uPath)
-			uPathNode.add(p.toString());
+		.put("tickDelay", tickDelay)
+		.put("userPath", userPath.toAbsolutePath().toString());
 		
 		return rootNode;
 	}
@@ -180,26 +169,24 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	@Override
 	public String asBasicConfig()
 	{
-		final StringBuilder builder = new StringBuilder(100);
-		
-		builder
-		.append("locale=").append(locale.getLanguage()).append('\n')
-		.append("configPath=").append(configPath.toAbsolutePath()).append('\n')
-		.append("userPath=").append(userPath.toAbsolutePath()).append('\n')
-		.append("username=").append(username).append('\n')
-		.append("tickDelay=").append(tickDelay).append('\n');
-		
-		return builder.toString();
+
+		return "locale=" + locale.getLanguage() + '\n' +
+				"configPath=" + configPath.toAbsolutePath() + '\n' +
+				"userPath=" + userPath.toAbsolutePath() + '\n' +
+				"username=" + username + '\n' +
+				"tickDelay=" + tickDelay + '\n';
 	}
 
 	@Override
 	public ProgramConfig clone()
 	{
+		LOGGER.debug("Cloning ProgramConfig instance...");
 		try
 		{
 			return (ProgramConfig) super.clone();
 		} catch (CloneNotSupportedException e)
 		{
+			LOGGER.warn("Could not clone instance! Had to use backup, trace:", e);
 			Main.openErrorDialog(e);
 			return new ProgramConfig().copy(this);
 		}
@@ -226,11 +213,9 @@ public class ProgramConfig implements Config<ProgramConfig>, Hashable, Serializa
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("ProgramConfig [locale=").append(locale).append(", userPath=").append(userPath)
-				.append(", configPath=").append(configPath).append(", username=").append(username)
-				.append(", tickDelay=").append(tickDelay).append(']');
-		return builder.toString();
+		return "ProgramConfig [locale=" + locale + ", userPath=" + userPath +
+				", configPath=" + configPath + ", username=" + username +
+				", tickDelay=" + tickDelay + ']';
 	}
 	
 }

@@ -16,6 +16,7 @@ import com.google.common.hash.PrimitiveSink;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.text.Text;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class RBMKSimColumnBase extends RBMKColumnBase
 {
 	@Serial

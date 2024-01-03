@@ -17,7 +17,11 @@ import com.google.common.hash.PrimitiveSink;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import org.uffr.rbmksim.util.I18n;
+import org.uffr.rbmksim.util.InfoProviderNT;
+import org.uffr.rbmksim.util.TextBuilder;
 
+@SuppressWarnings("UnstableApiUsage")
 public class RBMKBoiler extends RBMKSimColumnBase
 {
 	@Serial
@@ -39,6 +43,7 @@ public class RBMKBoiler extends RBMKSimColumnBase
 		return steamTank.getFill();
 	}
 	
+	@SuppressWarnings({"IntegerDivisionInFloatingPointContext" , "MathRoundingWithIntArgument"})
 	@Override
 	public void tick()
 	{
@@ -71,10 +76,12 @@ public class RBMKBoiler extends RBMKSimColumnBase
 	public void addInformation(List<Text> info)
 	{
 		super.addInformation(info);
-		info.add(new Text("Water: " + waterTank.getFill() + '/' + waterTank.maxFill + "mB"));
-		info.add(new Text(steamTank.getFluidType().name + ": " + steamTank.getFill() + '/' + steamTank.maxFill + "mB"));
+		info.add(new TextBuilder(I18n.resolve("fluid.water") + " (" + waterTank.getFill() + '/' + waterTank.maxFill + "mB)").setColor(Color.YELLOW).getText());
+		info.add(InfoProviderNT.getNewline());
+		info.add(new TextBuilder(steamTank.getFluidType().toString() + " (" + steamTank.getFill() + '/' + steamTank.maxFill + "mB)").setColor(Color.YELLOW).getText());
+		info.add(InfoProviderNT.getNewline());
 	}
-	
+
 	@Override
 	public void funnelInto(PrimitiveSink sink)
 	{
@@ -128,14 +135,13 @@ public class RBMKBoiler extends RBMKSimColumnBase
         return Objects.equals(steamTank, other.steamTank) && Objects.equals(waterTank, other.waterTank);
 	}
 	
+	@SuppressWarnings("UnstableApiUsage")
 	public static class FluidTank implements Serializable
 	{
 		@Serial
 		private static final long serialVersionUID = 599853533652632531L;
 		public static final Funnel<FluidTank> FUNNEL = (tank, sink) ->
-		{
-			sink.putInt(tank.getFill()).putInt(tank.maxFill).putInt(tank.getFluidType().ordinal());
-		};
+				sink.putInt(tank.getFill()).putInt(tank.maxFill).putInt(tank.getFluidType().ordinal());
 		private int fill;
 		public final int maxFill;
 		protected FluidType fluidType;

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 public class FrameRunner implements Runnable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FrameRunner.class);
-	private Optional<RBMKFrame> frame = Optional.empty();
+	private RBMKFrame frame = null;
 	private boolean active;
 	
 	public FrameRunner()
@@ -21,7 +21,12 @@ public class FrameRunner implements Runnable
 	{
 		if (active)
 		{
-			frame.get().tick();
+			if (frame == null)
+			{
+				LOGGER.warn("Tried to tick while frame is null!");
+				return;
+			}
+			frame.tick();
 			try
 			{
 				Thread.sleep(50 + Main.config.tickDelay);
@@ -31,6 +36,11 @@ public class FrameRunner implements Runnable
 				LOGGER.warn("Frame runner thread interrupted!", e);
 			}
 		}
+	}
+
+	public boolean canRun()
+	{
+		return frame != null;
 	}
 
 	public boolean isActive()
@@ -45,17 +55,17 @@ public class FrameRunner implements Runnable
 	
 	public Optional<RBMKFrame> getFrame()
 	{
-		return frame;
+		return Optional.ofNullable(frame);
 	}
 	
 	public void setFrame(RBMKFrame frame)
 	{
-		this.frame = Optional.ofNullable(frame);
+		this.frame = frame;
 	}
 	
 	public void close()
 	{
-		frame = Optional.empty();
+		frame = null;
 	}
 	
 }

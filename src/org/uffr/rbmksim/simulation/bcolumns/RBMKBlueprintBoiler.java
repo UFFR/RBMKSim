@@ -1,16 +1,22 @@
 package org.uffr.rbmksim.simulation.bcolumns;
 
-import java.io.Serial;
-import java.util.Objects;
-
+import com.google.common.hash.PrimitiveSink;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import org.uffr.rbmksim.simulation.ColumnType;
 import org.uffr.rbmksim.simulation.FluidType;
 import org.uffr.rbmksim.simulation.GridLocation;
 import org.uffr.rbmksim.simulation.scolumns.RBMKBoiler;
 import org.uffr.rbmksim.simulation.scolumns.RBMKBoiler.FluidTank;
+import org.uffr.rbmksim.util.I18n;
+import org.uffr.rbmksim.util.InfoProviderNT;
+import org.uffr.rbmksim.util.TextBuilder;
 
-import com.google.common.hash.PrimitiveSink;
+import java.io.Serial;
+import java.util.List;
+import java.util.Objects;
 
+@SuppressWarnings("UnstableApiUsage")
 public class RBMKBlueprintBoiler extends RBMKBlueprintColumn
 {
 	@Serial
@@ -29,7 +35,17 @@ public class RBMKBlueprintBoiler extends RBMKBlueprintColumn
 		steamTank = new FluidTank(FluidType.STEAM, 1000000);
 		waterTank = new FluidTank(FluidType.WATER, 10000);
 	}
-	
+
+	@Override
+	public void addInformation(List<Text> info)
+	{
+		super.addInformation(info);
+		info.add(new TextBuilder(I18n.resolve("fluid.water") + " (" + waterTank.getFill() + '/' + waterTank.maxFill + "mB)").setColor(Color.YELLOW).getText());
+		info.add(InfoProviderNT.getNewline());
+		info.add(new TextBuilder(steamTank.getFluidType().toString() + " (" + steamTank.getFill() + '/' + steamTank.maxFill + "mB)").setColor(Color.YELLOW).getText());
+		info.add(InfoProviderNT.getNewline());
+	}
+
 	@Override
 	public void reset()
 	{
@@ -70,11 +86,10 @@ public class RBMKBlueprintBoiler extends RBMKBlueprintColumn
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("BlueprintBoiler [steamTank=").append(steamTank).append(", waterTank=").append(waterTank)
-				.append(", getLocation()=").append(getLocation()).append(", getColumnType()=")
-				.append(getColumnType()).append(", isModerated()=").append(isModerated()).append(']');
-		return builder.toString();
+		String builder = "BlueprintBoiler [steamTank=" + steamTank + ", waterTank=" + waterTank +
+				", getLocation()=" + getLocation() + ", getColumnType()=" +
+				getColumnType() + ", isModerated()=" + isModerated() + ']';
+		return builder;
 	}
 	
 }

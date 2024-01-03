@@ -1,20 +1,9 @@
 package org.uffr.rbmksim.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Optional;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
-import org.checkerframework.checker.units.qual.N;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.stage.FileChooser.ExtensionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uffr.rbmksim.main.Main;
@@ -24,10 +13,14 @@ import org.uffr.rbmksim.main.RBMKSimulation;
 import org.uffr.uffrlib.misc.StringUtil;
 import org.uffr.uffrlib.misc.Version;
 
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
-import javafx.stage.FileChooser.ExtensionFilter;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 
 public class FileUtil
 {
