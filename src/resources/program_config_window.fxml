@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.u_group13.rbmksim.main.ProgramConfigController">
+   <children>
+      <FlowPane alignment="CENTER" columnHalignment="CENTER" maxWidth="1.7976931348623157E308" orientation="VERTICAL" vgap="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label fx:id="localeLabel" text="Locale" />
+            <ChoiceBox fx:id="localeChoiceBox" maxWidth="1.7976931348623157E308">
+               <tooltip>
+                  <Tooltip fx:id="localeChoiceBoxTooltip" text="Locale to use for i18n" />
+               </tooltip>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+            </ChoiceBox>
+            <Label fx:id="userPathLabel" text="User path" />
+            <HBox prefWidth="200.0" spacing="5.0">
+               <children>
+                  <TextField fx:id="directoryPathTextField" promptText="Directory path">
+                     <tooltip>
+                        <Tooltip fx:id="userPathTooltip" text="Default path for blueprints and simulations" />
+                     </tooltip>
+                  </TextField>
+                  <Button fx:id="directoryPathSelectButton" mnemonicParsing="false" onAction="#onClickChoosePath">
+                     <tooltip>
+                        <Tooltip fx:id="userPathChooseTooltip" text="Choose path" />
+                     </tooltip>
+                  </Button>
+                  <Button fx:id="directoryPathResetButton" cancelButton="true" mnemonicParsing="false" onAction="#onClickResetPath">
+                     <tooltip>
+                        <Tooltip fx:id="userPathResetTooltip" text="Reset to default" />
+                     </tooltip>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="5.0" top="5.0" />
+               </padding>
+            </HBox>
+            <Label fx:id="usernameLabel" text="Username" />
+            <TextField fx:id="usernameTextField" promptText="Username">
+               <tooltip>
+                  <Tooltip fx:id="usernameTextFieldTooltip" text="Name that is used to credit the creator of blueprints and simulations created" />
+               </tooltip>
+            </TextField>
+            <Label fx:id="tickDelayLabel" text="Tick delay" />
+            <TextField fx:id="tickDelayTextField" promptText="Tick delay">
+               <tooltip>
+                  <Tooltip fx:id="tickDelayTextFieldTooltip" text="Delay between simulation ticks in milliseconds" />
+               </tooltip>
+            </TextField>
+            <CheckBox fx:id="repairCheckBox" mnemonicParsing="false" selected="true" text="Repair discrepancies">
+               <tooltip>
+                  <Tooltip fx:id="repairCheckBoxTooltip" text="Whether to try to fix issues with loaded save files" />
+               </tooltip>
+            </CheckBox>
+            <CheckBox fx:id="binarySavesCheckBox" mnemonicParsing="false" selected="true" text="Binary saves">
+               <tooltip>
+                  <Tooltip fx:id="binarySavesCheckBoxTooltip" text="If true, save files will be in the standard binary format. Otherwise, a JSON file." />
+               </tooltip>
+            </CheckBox>
+            <HBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <Button fx:id="okButton" alignment="CENTER" defaultButton="true" mnemonicParsing="false" onAction="#onClickOK" text="OK" />
+                  <Button fx:id="cancelButton" alignment="BOTTOM_CENTER" cancelButton="true" mnemonicParsing="false" onAction="#onClickCancel" text="Cancel" />
+                  <Button fx:id="applyButton" alignment="BOTTOM_CENTER" mnemonicParsing="false" onAction="#onClickApply" text="Apply" />
+               </children>
+               <padding>
+                  <Insets bottom="5.0" top="5.0" />
+               </padding>
+            </HBox>
+         </children>
+      </FlowPane>
+   </children>
+</AnchorPane>

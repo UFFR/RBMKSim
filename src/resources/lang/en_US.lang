@@ -32,6 +32,7 @@ app.nameTooltip.text=Name of the design
 app.resetColumnButton.text=Reset Column
 app.setColumnButtonTooltip.text=Sets the current column at the location
 app.setColumnLabel.text=Set Column
+app.startPauseButton.text=Start/Pause
 app.title.about=About
 app.title.credits=Credits
 app.title=NTM RBMK Blueprint Designer & Simulator
@@ -40,12 +41,23 @@ app.versionTooltip.text=The version of this design, semantic versioning enforced
 app.zoomLabel.text=Zoom Level
 app.zoomTextField.promptText=Zoom amount
 
+app.programConfig.title=Program Configuration
+app.programConfig.userPathChoose=Choose user path...
+
+color.blue=Blue
+color.green=Green
+color.purple=Purple
+color.red=Red
+color.yellow=Yellow
+
 column.info=Column Info
 column.moderated=Moderated: %s
 
 column.type.absorber=Boron Neutron Absorber
 column.type.blank=Structural Column
 column.type.boiler=Boiler
+column.type.control.color=Color Category:
+column.type.control.level=Extraction Level: %s
 column.type.controlAuto=Automatic Control Rod Column
 column.type.controlManual=Control Rod Column
 column.type.fuel.empty=Has no fuel rod
@@ -90,9 +102,11 @@ dialog.error.title=Error!
 dialog.file.open=Open blueprint/simulation...
 dialog.file.save=Save as...
 
-dialog.warning.badMagic.body=Expected %s or %s but got 0x%s instead. This should not be possible and may cause unforeseen consequences in runtime behavior if read otherwise successfully. Do you wish to continue with reading?
+dialog.warning.badMagic.body=Expected %s or %s but got 0x%s instead. This should not be possible and may cause unforeseen consequences in runtime behavior if read otherwise successfully. Continue with reading?
 dialog.warning.badMagic.header=Magic number header of file [%s] does not match expected magic numbers!
-dialog.warning.badVersion.body=File was made by program version v%s, while the current program's version is v%s. There may be unforeseen discrepancies. Do you wish to continue anyway?
+dialog.warning.badVersion.body=File was made by program version v%s, while the current program's version is v%s. There may be unforeseen discrepancies. Continue?
+dialog.warning.badVersion.diffNew=newer
+dialog.warning.badVersion.diffOld=older
 dialog.warning.badVersion.header=The save file was made with a version that is %s than the currently running program
 dialog.warning.title=Warning!
 
@@ -162,3 +176,5 @@ fuelx.splitWith=Arrives from: Hyperbolic non-euclidian shapes
 fuelx.xenon=Lead poison: %s%%
 fuelx.xenonBurn=Lead destruction function: x² * %s
 fuelx.xenonGen=Lead creation function: x * %s
+
+pane.none=Select column
